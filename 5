@@ -1,0 +1,246 @@
+#include <iostream>
+#include <cmath>
+#include <stack>
+#include <vector>
+#include <cstring>
+#include <fstream>
+#include "tgaimage.h"
+
+using namespace std;
+
+const TGAColor black = TGAColor(0, 0, 0, 0);
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
+
+void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color) //Alg_Brez modif+
+{
+	int deltaX = abs(x2 - x1);
+	int deltaY = abs(y2 - y1);
+	int signX = x1 < x2 ? 1 : -1;
+	int signY = y1 < y2 ? 1 : -1;
+	int error = deltaX - deltaY;
+	image.set(x2, y2, color);
+	while (x1 != x2 || y1 != y2)
+	{
+		image.set(x1, y1, color);
+		if (error * 2 > -deltaY)
+		{
+			error -= deltaY;
+			x1 += signX;
+			continue;
+		}
+		if (error * 2 < deltaX)
+		{
+			error += deltaX;
+			y1 += signY;
+			continue;
+		}
+	}
+}
+
+struct Pixel
+{
+	int x, y;
+};
+
+struct Rebro
+{
+	int x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+};
+
+void zalivka_postrochno(Rebro R1, Rebro R2, Rebro R3, TGAImage &image, TGAColor color)
+{
+	vector <Pixel> list1;
+	Pixel Z;
+	if (R1.y2 != R1.y1 && R1.x2 != R1.x1)
+	{
+		int signX = R1.x1 < R1.x2 ? 1 : -1;
+		int signY = R1.y1 < R1.y2 ? 1 : -1;
+		double x = R1.x1, y = R1.y1, delta = (double)abs(R1.x2 - R1.x1) / (double)abs(R1.y2 - R1.y1);
+		while (y != R1.y2)
+		{
+			Z.x = (int)x, Z.y = (int)y;
+			list1.push_back(Z);
+			x += signX*delta, y += signY;
+		}
+	}
+	else
+	{
+		Z.x = R1.x1, Z.y = R1.y1;
+		list1.push_back(Z);
+		Z.x = R1.x2, Z.y = R1.y2;
+		list1.push_back(Z);
+	}
+
+	vector <Pixel> list2;
+	if (R2.y2 != R2.y1 && R2.x2 != R2.x1)
+	{
+		int signX = R2.x1 < R2.x2 ? 1 : -1;
+		int signY = R2.y1 < R2.y2 ? 1 : -1;
+		double x = R2.x1, y = R2.y1, delta = (double)abs(R2.x2 - R2.x1) / (double)abs(R2.y2 - R2.y1);
+		while (y != R2.y2)
+		{
+			Z.x = (int)x, Z.y = (int)y;
+			list2.push_back(Z);
+			x += signX*delta, y += signY;
+		}
+	}
+	else
+	{
+		Z.x = R2.x1, Z.y = R2.y1;
+		list2.push_back(Z);
+		Z.x = R2.x2, Z.y = R2.y2;
+		list2.push_back(Z);
+	}
+
+	vector <Pixel> list3;
+	if (R3.y2 != R3.y1 && R3.x2 != R3.x1)
+	{
+		int signX = R3.x1 < R3.x2 ? 1 : -1;
+		int signY = R3.y1 < R3.y2 ? 1 : -1;
+		double x = R3.x1, y = R3.y1, delta = (double)abs(R3.x2 - R3.x1) / (double)abs(R3.y2 - R3.y1);
+		while (y != R3.y2)
+		{
+			Z.x = (int)x, Z.y = (int)y;
+			list3.push_back(Z);
+			x += signX*delta, y += signY;
+		}
+	}
+	else
+	{
+		Z.x = R3.x1, Z.y = R3.y1;
+		list3.push_back(Z);
+		Z.x = R3.x2, Z.y = R3.y2;
+		list3.push_back(Z);
+	}
+
+	vector<Pixel> fulllist;
+	fulllist.insert(fulllist.end(), list1.begin(), list1.end());
+	fulllist.insert(fulllist.end(), list2.begin(), list2.end());
+	fulllist.insert(fulllist.end(), list3.begin(), list3.end());
+
+	for (int i = 1; i < fulllist.size(); i++)
+		for (int j = 0; j < fulllist.size() - i; j++)
+			if (fulllist[j].y > fulllist[j + 1].y)
+				swap(fulllist[j], fulllist[j + 1]);
+
+	for (int i = 1; i < fulllist.size(); i++)
+		for (int j = 0; j < fulllist.size() - i; j++)
+			if (fulllist[j].y == fulllist[j + 1].y && fulllist[j].x > fulllist[j + 1].x)
+				swap(fulllist[j], fulllist[j + 1]);
+
+	Pixel Point1, Point2;
+	while (!fulllist.empty())
+	{
+		Point1 = fulllist.back();
+		fulllist.pop_back();
+		if (!fulllist.empty())
+		{
+			Point2 = fulllist.back(), fulllist.pop_back();
+			line(Point1.x, Point1.y, Point2.x, Point2.y, image, color);
+		}
+
+	}
+}
+
+int main()
+{
+	TGAImage image(2000, 2000, TGAImage::RGB);
+
+	ifstream in;
+	char str[255];
+	char *p, *context1, *context2, *v1, *v2, *f1, *f2, *f3;
+	double a1 = 0, a2 = 0;
+	int b1 = 0, b2 = 0, b3 = 0;
+	in.open("african_head.obj");
+	int k = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'v') k++;
+	}
+	in.close();
+	int** arrk = new int*[k];
+	for (int i = 0; i < k; i++)
+		arrk[i] = new int[2];
+	for (int i = 0; i < k; i++)
+		for (int j = 0; j < 2; j++)
+			arrk[i][j] = 0;
+	in.open("african_head.obj");
+	int l = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'f') l++;
+	}
+	in.close();
+	int** arrl = new int*[l];
+	for (int i = 0; i < l; i++)
+		arrl[i] = new int[3];
+	for (int i = 0; i < l; i++)
+		for (int j = 0; j < 3; j++)
+			arrl[i][j] = 0;
+	in.open("african_head.obj");
+	int i = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'v')
+		{
+			p = strtok_s(str, " ", &context1);
+			v1 = strtok_s(NULL, " ", &context1);
+			v2 = strtok_s(NULL, " ", &context1);
+			a1 = atof(v1), a2 = atof(v2);
+			arrk[i][0] = int(a1 * 1000), arrk[i][1] = int(a2 * 1000);
+			i++;
+		}
+	}
+	in.close();
+	in.open("african_head.obj");
+	int j = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'f')
+		{
+			p = strtok_s(str, " ", &context1);
+			f1 = strtok_s(NULL, " ", &context1);
+			f2 = strtok_s(NULL, " ", &context1);
+			f3 = strtok_s(NULL, " ", &context1);
+			b1 = atoi(strtok_s(f1, "/", &context2)), b2 = atoi(strtok_s(f2, "/", &context2)), b3 = atoi(strtok_s(f3, "/", &context2));
+			arrl[j][0] = b1, arrl[j][1] = b2, arrl[j][2] = b3;
+			j++;
+		}
+	}
+	in.close();
+
+	for (int i = 0; i < l; i++)
+	{
+		int p1 = arrl[i][0] - 1, p2 = arrl[i][1] - 1, p3 = arrl[i][2] - 1;
+		int xA = arrk[p1][0], yA = arrk[p1][1];
+		int xB = arrk[p2][0], yB = arrk[p2][1];
+		int xC = arrk[p3][0], yC = arrk[p3][1];
+		xA += 1000, xB += 1000, xC += 1000, yA += 1000, yB += 1000, yC += 1000;
+		line(xA, yA, xB, yB, image, white);
+		line(xA, yA, xC, yC, image, white);
+		line(xB, yB, xC, yC, image, white);
+		Rebro R1, R2, R3;
+		R1.x1 = xA, R1.y1 = yA, R1.x2 = xB, R1.y2 = yB;
+		R2.x1 = xB, R2.y1 = yB, R2.x2 = xC, R2.y2 = yC;
+		R3.x1 = xA, R3.y1 = yA, R3.x2 = xC, R3.y2 = yC;
+		zalivka_postrochno(R1, R2, R3, image, TGAColor(rand() % 255, rand() % 255, rand() % 255, rand() % 255));
+	}
+
+	image.flip_vertically();
+	image.write_tga_file("output.tga");
+
+	for (int i = 0; i < k; i++)
+		delete[] arrk[i];
+	delete[] arrk;
+	for (int i = 0; i < l; i++)
+		delete[] arrl[i];
+	delete[] arrl;
+
+	//system("pause");
+	return 0;
+}
