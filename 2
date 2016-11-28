@@ -1,0 +1,116 @@
+#include "tgaimage.h"
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
+const TGAColor color1 = TGAColor(144, 12, 71, 85);
+const TGAColor color2 = TGAColor(16, 233, 111, 0);
+const TGAColor color3 = TGAColor(147, 11, 95, 1);
+const TGAColor color4 = TGAColor(95, 247, 101, 14);
+
+
+void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color)
+{
+	int deltaX = abs(x2 - x1);
+	int deltaY = abs(y2 - y1);
+	int signX = x1 < x2 ? 1 : -1;
+	int signY = y1 < y2 ? 1 : -1;
+	int error = 2*deltaY - deltaX;
+	image.set(x2, y2, color);
+	while (x1 != x2)
+	{
+		image.set(x1, y1, color);
+		if (error < 0) error += 2 * deltaY;
+		else error += 2 * deltaY - 2 * deltaX, y1 += signY;
+		x1 += signX;
+	}
+}
+
+void lineB(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color) //Alg_Brez modif+
+{
+	int deltaX = abs(x2 - x1);
+	int deltaY = abs(y2 - y1);
+	int signX = x1 < x2 ? 1 : -1;
+	int signY = y1 < y2 ? 1 : -1;
+	int error = deltaX - deltaY;
+	image.set(x2, y2, color);
+	while (x1 != x2 || y1 != y2)
+	{
+		image.set(x1, y1, color);
+		if (error * 2 > - deltaY)
+		{
+			error -= deltaY;
+			x1 += signX;
+			continue;
+		}
+		if (error * 2 < deltaX)
+		{
+			error += deltaX;
+			y1 += signY;
+			continue;
+		}
+	}
+}
+
+void circle(int x0, int y0, int R, TGAImage &image, TGAColor color) //Alg_Brez+
+{
+	int x = 0, y = R;
+	int delta = 1 - 2 * R;
+	int error = 0;
+	while (y >= 0) 
+	{
+		image.set(x0 + x, y0 + y, color);
+		image.set(x0 + x, y0 - y, color);
+		image.set(x0 - x, y0 + y, color);
+		image.set(x0 - x, y0 - y, color);
+		error = 2 * (delta + y) - 1;
+		if (delta < 0 && error <= 0) 
+		{
+			++x;
+			delta += 2 * x + 1;
+			continue;
+		}
+		error = 2 * (delta - x) - 1;
+		if (delta > 0 && error > 0)
+		{
+			--y;
+			delta += 1 - 2 * y;
+			continue;
+		}
+		++x;
+		delta += 2 * (x - y);
+		--y;
+	}
+}
+
+void circle_param(int x0, int y0, int R, TGAImage &image, TGAColor color) //Parametr Alg
+{
+	int x1, x2, y1, y2;
+	x2 = x0 + R;
+	y2 = y0;
+	for (int a = 1; a <= 360; a++)
+	{
+		x1 = x2, y1 = y2;
+		x2 = round(R*cos(a * 3.1415926535897 / 180)) + x0;
+		y2 = round(R*sin(a * 3.1415926535897 / 180)) + y0;
+		line(x1, y1, x2, y2, image, color);
+	}
+}
+
+
+int main(int argc, char** argv) 
+{
+	TGAImage image(700, 500, TGAImage::RGB);
+	image.flip_vertically();
+	circle(350, 400, 100, image, color1);
+	circle_param(350, 230, 70, image, color2);
+	circle(350, 110, 50, image, color3);
+	line(300, 200, 200, 300, image, color4);
+	lineB(400, 200, 500, 300, image, white);
+	image.write_tga_file("output.tga");
+	//system("pause");
+	return 0;
+}
