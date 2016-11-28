@@ -1,0 +1,262 @@
+#include <iostream>
+#include <cmath>
+#include <cstring>
+#include <stack>
+#include <vector>
+#include "tgaimage.h"
+
+using namespace std;
+
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
+
+const TGAColor color1 = TGAColor(255, 255, 255, 0);
+const TGAColor color2 = TGAColor(255, 255, 0, 255);
+const TGAColor color3 = TGAColor(255, 0, 255, 255);
+const TGAColor color4 = TGAColor(0, 255, 255, 255);
+
+void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color)
+{
+	int deltaX = abs(x2 - x1);
+	int deltaY = abs(y2 - y1);
+	int signX = x1 < x2 ? 1 : -1;
+	int signY = y1 < y2 ? 1 : -1;
+	int error = deltaX - deltaY;
+	image.set(x2, y2, color);
+	while (x1 != x2 || y1 != y2)
+	{
+		image.set(x1, y1, color);
+		if (error * 2 > -deltaY)
+		{
+			error -= deltaY;
+			x1 += signX;
+			continue;
+		}
+		if (error * 2 < deltaX)
+		{
+			error += deltaX;
+			y1 += signY;
+			continue;
+		}
+	}
+}
+
+struct Pixel
+{
+	int x, y;
+};
+
+void zalivka_s_zatravkoi(int x0, int y0, TGAImage &image, TGAColor color)
+{
+	stack <Pixel> arr;
+	Pixel p0;
+	p0.x = x0, p0.y = y0;
+	arr.push(p0);
+	while (!arr.empty())
+		{
+		Pixel p = arr.top();
+		arr.pop();
+		int xmin = p.x;
+		TGAColor colorP = image.get(x0, y0);
+		TGAColor colorNP = image.get(xmin - 1, p.y);
+		while (colorNP.val == 0)//!=?
+		{
+			xmin--;
+			colorNP = image.get(xmin - 1, p.y);
+		}
+		int xmax = p.x;
+		colorNP = image.get(xmax + 1, p.y);
+		while (colorNP.val == 0)//!=?
+		{
+			xmax++;
+			colorNP = image.get(xmax + 1, p.y);
+		}
+
+		line(xmin, p.y, xmax, p.y, image, colorP);
+
+		int flag = 1;
+		for (int x = xmin; x < xmax; x++)
+		{
+			colorNP = image.get(x, p.y - 1);
+			if (colorNP.val == 0)//!=?
+			{
+				if (flag == 1)
+				{
+					Pixel pp;
+					pp.x = x, pp.y = p.y - 1;
+					arr.push(pp);
+					flag = 0;
+				}
+			}
+			else flag = 1;
+		}
+
+		flag = 1;
+		for (int x = xmin; x < xmax; x++)
+		{
+			colorNP = image.get(x, p.y + 1);
+			if (colorNP.val == 0)//!=?
+			{
+				if (flag == 1)
+				{
+					Pixel pp;
+					pp.x = x, pp.y = p.y + 1;
+					arr.push(pp);
+					flag = 0;
+				}
+			}
+			else flag = 1;
+		}
+	}
+}
+
+struct Rebro
+{
+	int x1, y1, x2, y2;
+};
+
+void zalivka_postrochno(Rebro R1, Rebro R2, Rebro R3, Rebro R4, TGAImage &image, TGAColor color)
+{
+	vector <Pixel> list1;
+	Pixel Z;
+	if (R1.y2 != R1.y1 && R1.x2 != R1.x1)
+	{
+		int signX = R1.x1 < R1.x2 ? 1 : -1;
+		int signY = R1.y1 < R1.y2 ? 1 : -1;
+		double x = R1.x1, y = R1.y1, delta = (double)abs(R1.x2 - R1.x1) / (double)abs(R1.y2 - R1.y1);
+		while (y != R1.y2)
+		{
+			Z.x = (int) x, Z.y = (int) y;
+			list1.push_back(Z);
+			x += signX*delta, y += signY;
+		}
+	}
+	else
+	{
+		Z.x = R1.x1, Z.y = R1.y1;
+		list1.push_back(Z);
+		Z.x = R1.x2, Z.y = R1.y2;
+		list1.push_back(Z);
+	}
+
+	vector <Pixel> list2;
+	if (R2.y2 != R2.y1 && R2.x2 != R2.x1)
+	{
+		int signX = R2.x1 < R2.x2 ? 1 : -1;
+		int signY = R2.y1 < R2.y2 ? 1 : -1;
+		double x = R2.x1, y = R2.y1, delta = (double)abs(R2.x2 - R2.x1) / (double)abs(R2.y2 - R2.y1);
+		while (y != R2.y2)
+		{
+			Z.x = (int) x, Z.y = (int) y;
+			list2.push_back(Z);
+			x += signX*delta, y += signY;
+		}
+	}
+	else
+	{
+		Z.x = R2.x1, Z.y = R2.y1;
+		list2.push_back(Z);
+		Z.x = R2.x2, Z.y = R2.y2;
+		list2.push_back(Z);
+	}
+
+	vector <Pixel> list3;
+	if (R3.y2 != R3.y1 && R3.x2 != R3.x1)
+	{
+		int signX = R3.x1 < R3.x2 ? 1 : -1;
+		int signY = R3.y1 < R3.y2 ? 1 : -1;
+		double x = R3.x1, y = R3.y1, delta = (double)abs(R3.x2 - R3.x1) / (double)abs(R3.y2 - R3.y1);
+		while (y != R3.y2)
+		{
+			Z.x = (int) x, Z.y = (int) y;
+			list3.push_back(Z);
+			x += signX*delta, y += signY;
+		}
+	}
+	else
+	{
+		Z.x = R3.x1, Z.y = R3.y1;
+		list3.push_back(Z);
+		Z.x = R3.x2, Z.y = R3.y2;
+		list3.push_back(Z);
+	}
+
+	vector <Pixel> list4;
+	if (R4.y2 != R4.y1 && R4.x2 != R4.x1)
+	{
+		int signX = R4.x1 < R4.x2 ? 1 : -1;
+		int signY = R4.y1 < R4.y2 ? 1 : -1;
+		double x = R4.x1, y = R4.y1, delta = (double)abs(R4.x2 - R4.x1) / (double)abs(R4.y2 - R4.y1);
+		while (y != R4.y2)
+		{
+			Z.x = (int) x, Z.y = (int) y;
+			list4.push_back(Z);
+			x += signX*delta, y += signY;
+		}
+	}
+	else
+	{
+		Z.x = R4.x1, Z.y = R4.y1;
+		list4.push_back(Z);
+		Z.x = R4.x2, Z.y = R4.y2;
+		list4.push_back(Z);
+	}
+
+	vector<Pixel> fulllist;
+	fulllist.insert(fulllist.end(), list1.begin(), list1.end());
+	fulllist.insert(fulllist.end(), list2.begin(), list2.end());
+	fulllist.insert(fulllist.end(), list3.begin(), list3.end());
+	fulllist.insert(fulllist.end(), list4.begin(), list4.end());
+
+	for (int i = 1; i < fulllist.size(); i++)
+		for (int j = 0; j < fulllist.size() - i; j++)
+			if (fulllist[j].y > fulllist[j + 1].y)
+				swap(fulllist[j], fulllist[j + 1]);
+
+	for (int i = 1; i < fulllist.size(); i++)
+		for (int j = 0; j < fulllist.size() - i; j++)
+			if (fulllist[j].y == fulllist[j + 1].y && fulllist[j].x > fulllist[j + 1].x)
+						swap(fulllist[j], fulllist[j + 1]);
+
+	Pixel Point1, Point2;
+	while (!fulllist.empty())
+	{
+		Point1 = fulllist.back();
+		fulllist.pop_back();
+		Point2 = fulllist.back();
+		fulllist.pop_back();
+		line(Point1.x, Point1.y, Point2.x, Point2.y, image, color);
+	}
+}
+
+int main()
+{
+	TGAImage image(700, 500, TGAImage::RGB);
+	
+	int x11 = 150, y11 = 300, x12 = 50, y12 = 400;
+	int x21 = 50, y21 = 400, x22 = 100, y22 = 100;
+	int x31 = 100, y31 = 100, x32 = 600, y32 = 200;
+	int x41 = 600, y41 = 200, x42 = 150, y42 = 300;
+
+	line(x11, y11, x12, y12, image, color1);
+	line(x21, y21, x22, y22, image, color2);
+	line(x31, y31, x32, y32, image, color3);
+	line(x41, y41, x42, y42, image, color4);
+
+	image.set(150, 150, white);
+	TGAColor colorP = image.get(150, 150);
+
+	zalivka_s_zatravkoi(150, 150, image, colorP);
+
+	Rebro R1, R2, R3, R4;
+	R1.x1 = x11, R1.y1 = y11, R1.x2 = x12, R1.y2 = y12;
+	R2.x1 = x21, R2.y1 = y21, R2.x2 = x22, R2.y2 = y22;
+	R3.x1 = x31, R3.y1 = y31, R3.x2 = x32, R3.y2 = y32;
+	R4.x1 = x41, R4.y1 = y41, R4.x2 = x42, R4.y2 = y42;
+	//zalivka_postrochno(R1, R2, R3, R4, image, red);
+
+	image.flip_vertically();
+	image.write_tga_file("output.tga");
+	//system("pause");
+	return 0;
+}
