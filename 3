@@ -1,0 +1,127 @@
+#include <iostream>
+#include <cmath>
+#include <cstring>
+#include <fstream>
+#include "tgaimage.h"
+
+using namespace std;
+
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
+
+/*void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color) //Alg_Brez modif+
+{
+	int deltaX = abs(x2 - x1);
+	int deltaY = abs(y2 - y1);
+	int signX = x1 < x2 ? 1 : -1;
+	int signY = y1 < y2 ? 1 : -1;
+	int error = deltaX - deltaY;
+	image.set(x2, y2, color);
+	while (x1 != x2 || y1 != y2)
+	{
+		image.set(x1, y1, color);
+		if (error * 2 > -deltaY)
+		{
+			error -= deltaY;
+			x1 += signX;
+			continue;
+		}
+		if (error * 2 < deltaX)
+		{
+			error += deltaX;
+			y1 += signY;
+			continue;
+		}
+	}
+}*/
+
+void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color)
+{
+	int deltaX = abs(x2 - x1);
+	int deltaY = abs(y2 - y1);
+	int signX = x1 < x2 ? 1 : -1;
+	int signY = y1 < y2 ? 1 : -1;
+	int error = 2 * deltaY - deltaX;
+	image.set(x2, y2, color);
+	while (x1 != x2)
+	{
+		image.set(x1, y1, color);
+		if (error < 0) error += 2 * deltaY;
+		else error += 2 * deltaY - 2 * deltaX, y1 += signY;
+		x1 += signX;
+	}
+}
+
+int main() 
+{
+	TGAImage image(2000, 2000, TGAImage::RGB);
+
+	ifstream in;
+	in.open("african_head.obj");
+	char str[255];
+	char *p, *context1, *context2, *v1, *v2, *f1, *f2;
+	double a1 = 0, a2 = 0;
+	int k = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'v') k++;
+	}
+	in.close();
+	int** arr = new int* [k];
+	for (int i = 0; i < k; i++)
+		arr[i] = new int[2];
+	for (int i = 0; i < k; i++)
+		for (int j = 0; j < 2; j++)
+			arr[i][j] = 0;
+	in.open("african_head.obj");
+	int i = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'v')
+		{
+			p = strtok_s(str, " ", &context1);
+			v1 = strtok_s(NULL, " ", &context1);
+			v2 = strtok_s(NULL, " ", &context1);
+			a1 = atof(v1), a2 = atof(v2);
+			arr[i][0] = int(a1 * 1000), arr[i][1] = int(a2 * 1000);
+			i++;
+		}
+	}
+	in.close();
+	in.open("african_head.obj");
+	int point1 = 0, point2 = 0;
+	int yyy = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'f')
+		{
+			p = strtok_s(str, " ", &context1);
+			f1 = strtok_s(NULL, " ", &context1);
+			f2 = strtok_s(f1, "/", &context2);
+			point1 = atoi(f2);
+			while (f1 != NULL)
+			{
+				f1 = strtok_s(NULL, " ", &context1);
+				f2 = strtok_s(f1, "/", &context2);
+				point2 = atoi(f2);
+				if (point1 <= k &&  point2 <= k)
+					line(arr[point1 - 1][0] + 1000, arr[point1 - 1][1] + 1000, arr[point2 - 1][0] + 1000, arr[point2 - 1][1] + 1000, image, white);
+			}
+		}
+	}
+
+	in.close();
+	
+	image.flip_vertically();
+	image.write_tga_file("output.tga");
+
+	for (int i = 0; i < k; i++)
+		delete[] arr[i];
+	delete[] arr;
+
+	//system("pause");
+	return 0;
+}
