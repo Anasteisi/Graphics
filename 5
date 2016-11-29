@@ -139,7 +139,8 @@ void zalivka_postrochno(Rebro R1, Rebro R2, Rebro R3, TGAImage &image, TGAColor 
 			Point2 = fulllist.back(), fulllist.pop_back();
 			line(Point1.x, Point1.y, Point2.x, Point2.y, image, color);
 		}
-
+		else
+			image.set(Point1.x, Point1.y, color);
 	}
 }
 
