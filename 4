@@ -53,7 +53,7 @@ void zalivka_s_zatravkoi(int x0, int y0, TGAImage &image, TGAColor color)
 	p0.x = x0, p0.y = y0;
 	arr.push(p0);
 	while (!arr.empty())
-		{
+	{
 		Pixel p = arr.top();
 		arr.pop();
 		int xmin = p.x;
@@ -117,6 +117,9 @@ struct Rebro
 
 void zalivka_postrochno(Rebro R1, Rebro R2, Rebro R3, Rebro R4, TGAImage &image, TGAColor color)
 {
+	line(R1.x1, R1.y1, R1.x2, R1.y2, image, color);
+	line(R2.x1, R2.y1, R2.x2, R2.y2, image, color);
+	line(R3.x1, R3.y1, R3.x2, R3.y2, image, color);
 	vector <Pixel> list1;
 	Pixel Z;
 	if (R1.y2 != R1.y1 && R1.x2 != R1.x1)
@@ -126,7 +129,7 @@ void zalivka_postrochno(Rebro R1, Rebro R2, Rebro R3, Rebro R4, TGAImage &image,
 		double x = R1.x1, y = R1.y1, delta = (double)abs(R1.x2 - R1.x1) / (double)abs(R1.y2 - R1.y1);
 		while (y != R1.y2)
 		{
-			Z.x = (int) x, Z.y = (int) y;
+			Z.x = (int)x, Z.y = (int)y;
 			list1.push_back(Z);
 			x += signX*delta, y += signY;
 		}
@@ -147,7 +150,7 @@ void zalivka_postrochno(Rebro R1, Rebro R2, Rebro R3, Rebro R4, TGAImage &image,
 		double x = R2.x1, y = R2.y1, delta = (double)abs(R2.x2 - R2.x1) / (double)abs(R2.y2 - R2.y1);
 		while (y != R2.y2)
 		{
-			Z.x = (int) x, Z.y = (int) y;
+			Z.x = (int)x, Z.y = (int)y;
 			list2.push_back(Z);
 			x += signX*delta, y += signY;
 		}
@@ -168,7 +171,7 @@ void zalivka_postrochno(Rebro R1, Rebro R2, Rebro R3, Rebro R4, TGAImage &image,
 		double x = R3.x1, y = R3.y1, delta = (double)abs(R3.x2 - R3.x1) / (double)abs(R3.y2 - R3.y1);
 		while (y != R3.y2)
 		{
-			Z.x = (int) x, Z.y = (int) y;
+			Z.x = (int)x, Z.y = (int)y;
 			list3.push_back(Z);
 			x += signX*delta, y += signY;
 		}
@@ -189,7 +192,7 @@ void zalivka_postrochno(Rebro R1, Rebro R2, Rebro R3, Rebro R4, TGAImage &image,
 		double x = R4.x1, y = R4.y1, delta = (double)abs(R4.x2 - R4.x1) / (double)abs(R4.y2 - R4.y1);
 		while (y != R4.y2)
 		{
-			Z.x = (int) x, Z.y = (int) y;
+			Z.x = (int)x, Z.y = (int)y;
 			list4.push_back(Z);
 			x += signX*delta, y += signY;
 		}
@@ -216,7 +219,7 @@ void zalivka_postrochno(Rebro R1, Rebro R2, Rebro R3, Rebro R4, TGAImage &image,
 	for (int i = 1; i < fulllist.size(); i++)
 		for (int j = 0; j < fulllist.size() - i; j++)
 			if (fulllist[j].y == fulllist[j + 1].y && fulllist[j].x > fulllist[j + 1].x)
-						swap(fulllist[j], fulllist[j + 1]);
+				swap(fulllist[j], fulllist[j + 1]);
 
 	Pixel Point1, Point2;
 	while (!fulllist.empty())
@@ -232,7 +235,7 @@ void zalivka_postrochno(Rebro R1, Rebro R2, Rebro R3, Rebro R4, TGAImage &image,
 int main()
 {
 	TGAImage image(700, 500, TGAImage::RGB);
-	
+
 	int x11 = 150, y11 = 300, x12 = 50, y12 = 400;
 	int x21 = 50, y21 = 400, x22 = 100, y22 = 100;
 	int x31 = 100, y31 = 100, x32 = 600, y32 = 200;
@@ -246,14 +249,14 @@ int main()
 	image.set(150, 150, white);
 	TGAColor colorP = image.get(150, 150);
 
-	zalivka_s_zatravkoi(150, 150, image, colorP);
+	//zalivka_s_zatravkoi(150, 150, image, colorP);
 
 	Rebro R1, R2, R3, R4;
 	R1.x1 = x11, R1.y1 = y11, R1.x2 = x12, R1.y2 = y12;
 	R2.x1 = x21, R2.y1 = y21, R2.x2 = x22, R2.y2 = y22;
 	R3.x1 = x31, R3.y1 = y31, R3.x2 = x32, R3.y2 = y32;
 	R4.x1 = x41, R4.y1 = y41, R4.x2 = x42, R4.y2 = y42;
-	//zalivka_postrochno(R1, R2, R3, R4, image, red);
+	zalivka_postrochno(R1, R2, R3, R4, image, red);
 
 	image.flip_vertically();
 	image.write_tga_file("output.tga");
