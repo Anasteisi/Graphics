@@ -1,0 +1,292 @@
+#include <iostream>
+#include <cmath>
+#include <cstring>
+#include <stack>
+#include <vector>
+#include "tgaimage.h"
+
+using namespace std;
+
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
+
+const TGAColor color1 = TGAColor(255, 255, 255, 0);
+const TGAColor color2 = TGAColor(255, 255, 0, 255);
+const TGAColor color3 = TGAColor(255, 0, 255, 255);
+const TGAColor color4 = TGAColor(0, 255, 255, 255);
+const TGAColor color5 = TGAColor(255, 0, 255, 155);
+const TGAColor color6 = TGAColor(0, 255, 125, 255);
+
+
+void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color)
+{
+	int deltaX = abs(x2 - x1);
+	int deltaY = abs(y2 - y1);
+	int signX = x1 < x2 ? 1 : -1;
+	int signY = y1 < y2 ? 1 : -1;
+	int error = deltaX - deltaY;
+	image.set(x2, y2, color);
+	while (x1 != x2 || y1 != y2)
+	{
+		image.set(x1, y1, color);
+		if (error * 2 > -deltaY)
+		{
+			error -= deltaY;
+			x1 += signX;
+			continue;
+		}
+		if (error * 2 < deltaX)
+		{
+			error += deltaX;
+			y1 += signY;
+			continue;
+		}
+	}
+}
+
+struct code
+{
+	int b3 = 0, b2 = 0, b1 = 0, b0 = 0;
+};
+
+struct otrezok
+{
+	int x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+};
+
+code pointcode(double x, double y, double xmin, double ymin, double xmax, double ymax)
+{
+	code p;
+	p.b3 = x < xmin ? 1 : 0;
+	p.b2 = x > xmax ? 1 : 0;
+	p.b1 = y < ymin ? 1 : 0;
+	p.b0 = y > ymax ? 1 : 0;
+	return p;
+}
+
+otrezok rebro(int x1, int y1, int x2, int y2)
+{
+	otrezok o;
+	o.x1 = x1;
+	o.x2 = x2;
+	o.y1 = y1;
+	o.y2 = y2;
+	return o;
+}
+
+void print(otrezok l, TGAImage &image, TGAColor color)
+{
+	line(l.x1, l.y1, l.x2, l.y2, image, color);
+}
+
+int func1(code p)
+{
+	return (p.b0 == 1 || p.b1 == 1 || p.b2 == 1 || p.b3 == 1);
+}
+
+otrezok CS(int x10, int y10, int x20, int y20, int xmin0, int ymin0, int xmax0, int ymax0)
+{
+	double x1 = x10, y1 = y10, x2 = x20, y2 = y20, xmin = xmin0, ymin = ymin0, xmax = xmax0, ymax = ymax0;
+	otrezok res;
+	code c1 = pointcode(x1, y1, xmin, ymin, xmax, ymax);
+	code c2 = pointcode(x2, y2, xmin, ymin, xmax, ymax);
+	if ((c1.b0 == 0 && c2.b0 == 0) && (c1.b1 == 0 && c2.b1 == 0) && (c1.b2 == 0 && c2.b2 == 0) && (c1.b3 == 0 && c2.b3 == 0))
+	{
+		res.x1 = (int)x1, res.x2 = (int)x2, res.y1 = (int)y1, res.y2 = (int)y2;
+		return res;
+	}
+	if ((c1.b0 == 1 && c2.b0 == 1) || (c1.b1 == 1 && c2.b1 == 1) || (c1.b2 == 1 && c2.b2 == 1) || (c1.b3 == 1 && c2.b3 == 1))
+		return res;
+	
+	while ((func1(c1) == 1 || func1(c2) == 1) && (c1.b0 != c2.b0 || c1.b1 != c2.b1 || c1.b2 != c2.b2 || c1.b3 != c2.b3))
+	{
+		if (func1(c1) == 0)
+			swap(x1, x2), swap(y1, y2);
+
+		int signX = x1 < x2 ? 1 : -1;
+		int signY = y1 < y2 ? 1 : -1;
+
+		if (c1.b3 == 1)//left
+		{
+			y1 += signY * abs(xmin - x1) * abs(y2 - y1) / abs(x2 - x1);
+			x1 = xmin;
+		}
+		if (c1.b0 == 1)//up
+		{
+			x1 += signX * abs(y1 - ymax) * abs(x2 - x1) / abs(y2 - y1);
+			y1 = ymax;
+		}
+
+		if (c1.b2 == 1)//right
+		{
+			y1 += signY * abs(x1 - xmax) * abs(y2 - y1) / abs(x2 - x1);
+			x1 = xmax;
+		}
+		if (c1.b1 == 1)//down
+		{
+			x1 += signX * abs(ymin - y1) * abs(x2 - x1) / abs(y2 - y1);
+			y1 = ymin;
+		}
+		c1 = pointcode(x1, y1, xmin, ymin, xmax, ymax);
+		c2 = pointcode(x2, y2, xmin, ymin, xmax, ymax);
+	}
+	res.x1 = (int)x1, res.x2 = (int)x2, res.y1 = (int)y1, res.y2 = (int)y2;
+	return res;
+}
+
+double min(double a, double b)
+{
+	if (a < b) return a;
+	else return b;
+}
+
+double max(double a, double b)
+{
+	if (a > b) return a;
+	else return b;
+}
+
+otrezok CB(otrezok R1, otrezok R2, otrezok R3, otrezok N1, otrezok N2, otrezok N3, otrezok otr)
+{
+	double t1 = 0, t2 = 0, t3 = 0;
+
+	otrezok res = rebro(0, 0, 0, 0);
+	double p1, p2, p3;
+
+	p1 = (N1.x2 - N1.x1)*(otr.x2 - otr.x1) + (N1.y2 - N1.y1)*(otr.y2 - otr.y1);
+	p2 = (N2.x2 - N2.x1)*(otr.x2 - otr.x1) + (N2.y2 - N2.y1)*(otr.y2 - otr.y1);
+	p3 = (N3.x2 - N3.x1)*(otr.x2 - otr.x1) + (N3.y2 - N3.y1)*(otr.y2 - otr.y1);
+	t1 = (double) (otr.x1*(N1.x2 - N1.x1) - R1.x1*(N1.x2 - N1.x1) + otr.y1*(N1.y2 - N1.y1) - R1.y1*(N1.y2 - N1.y1)) / (-otr.y2*(N1.y2 - N1.y1) + otr.y1*(N1.y2 - N1.y1) - otr.x2*(N1.x2 - N1.x1) + otr.x1*(N1.x2 - N1.x1));
+	t2 = (double) (otr.x1*(N2.x2 - N2.x1) - R2.x1*(N2.x2 - N2.x1) + otr.y1*(N2.y2 - N2.y1) - R2.y1*(N2.y2 - N2.y1)) / (-otr.y2*(N2.y2 - N2.y1) + otr.y1*(N2.y2 - N2.y1) - otr.x2*(N2.x2 - N2.x1) + otr.x1*(N2.x2 - N2.x1));
+	t3 = (double) (otr.x1*(N3.x2 - N3.x1) - R3.x1*(N3.x2 - N3.x1) + otr.y1*(N3.y2 - N3.y1) - R3.y1*(N3.y2 - N3.y1)) / (-otr.y2*(N3.y2 - N3.y1) + otr.y1*(N3.y2 - N3.y1) - otr.x2*(N3.x2 - N3.x1) + otr.x1*(N3.x2 - N3.x1));
+	
+	double tmin = 0, tmax = 0;
+
+	if (p1 > 0)
+	{
+		if (p2 > 0)
+			tmin = max(t1, t2);
+		else
+			if (p3 > 0)
+				tmin = max(t1, t3);
+			else
+				tmin = t1;
+	}
+	else
+	{
+		if (p2 > 0)
+			if (p3 > 0)
+				tmin = max(t2, t3);
+			else
+				tmin = t2;
+		else
+			tmin = t3;
+	}
+
+	if (p1 < 0)
+	{
+		if (p2 < 0)
+			tmax = min(t1, t2);
+		else
+			if (p3 < 0)
+				tmax = min(t1, t3);
+			else
+				tmax = t1;
+	}
+	else
+	{
+		if (p2 < 0)
+			if (p3 < 0)
+				tmax = min(t2, t3);
+			else
+				tmax = t2;
+		else
+			tmax = t3;
+	}
+
+	if (tmin < tmax)
+	{
+		if ((tmin > 1 && tmax > 1) || (tmin < 0 && tmax < 0))
+			return res;
+		else
+		{
+			if (tmax > 1) tmax = 1;
+			if (tmin < 0) tmin = 0;
+			res.x1 = otr.x1 + (otr.x2 - otr.x1)*tmin;
+			res.y1 = otr.y1 + (otr.y2 - otr.y1)*tmin;
+			res.x2 = otr.x1 + (otr.x2 - otr.x1)*tmax;
+			res.y2 = otr.y1 + (otr.y2 - otr.y1)*tmax;
+		}
+	}
+	else
+		return res;
+	return res;
+}
+
+int main()
+{
+	TGAImage image(700, 500, TGAImage::RGB);
+
+	int x10 = 100, y10 = 100, x20 = 500, y20 = 400;
+
+	line(x10, y10, x20, y10, image, color1);
+	line(x20, y10, x20, y20, image, color4);
+	line(x20, y20, x10, y20, image, color3);
+	line(x10, y20, x10, y10, image, color2);
+
+	int x11 = 100, y11 = 500, x21 = 200, y21 = 0;
+	int x12 = 150, y12 = 50, x22 = 450, y22 = 450;
+	int x13 = 150, y13 = 500, x23 = 700, y23 = 300;
+	int x14 = 500, y14 = 500, x24 = 200, y24 = 200;
+	int x15 = 200, y15 = 0, x25 = 200, y25 = 500;
+	int x16 = 0, y16 = 500, x26 = 600, y26 = 0;
+
+	otrezok res1 = CS(x11, y11, x21, y21, x10, y10, x20, y20);
+	otrezok res2 = CS(x12, y12, x22, y22, x10, y10, x20, y20);
+	otrezok res3 = CS(x13, y13, x23, y23, x10, y10, x20, y20);
+	otrezok res4 = CS(x14, y14, x24, y24, x10, y10, x20, y20);
+	otrezok res5 = CS(x15, y15, x25, y25, x10, y10, x20, y20);
+	otrezok res6 = CS(x16, y16, x26, y26, x10, y10, x20, y20);
+
+	otrezok R1 = rebro(100, 100, 500, 200);
+	otrezok R2 = rebro(500, 200, 300, 400);
+	otrezok R3 = rebro(300, 400, 100, 100);
+	otrezok N1 = rebro(R1.x1, R1.y1, R1.x1 - 50, -4 * (R1.x1 - 50) + 500);
+	otrezok N2 = rebro(R2.x1, R2.y1, R2.x1 - 50, (R2.x1 - 50) - 300);
+	otrezok N3 = rebro(R3.x1, R3.y1, R3.x1 + 50, -0.6667 * (R3.x1 + 50) + 600);
+
+	otrezok otr1 = rebro(x11, y11, x21, y21);
+	otrezok otr2 = rebro(x12, y12, x22, y22);
+	otrezok otr3 = rebro(x13, y13, x23, y23);
+	otrezok otr4 = rebro(x14, y14, x24, y24);
+	otrezok otr5 = rebro(x15, y15, x25, y25);
+	otrezok otr6 = rebro(x16, y16, x26, y26);
+
+//	otrezok res1 = CB(R1, R2, R3, N1, N2, N3, otr1);
+//	otrezok res2 = CB(R1, R2, R3, N1, N2, N3, otr2);
+//	otrezok res3 = CB(R1, R2, R3, N1, N2, N3, otr3);
+//	otrezok res4 = CB(R1, R2, R3, N1, N2, N3, otr4);
+//	otrezok res5 = CB(R1, R2, R3, N1, N2, N3, otr5);
+//	otrezok res6 = CB(R1, R2, R3, N1, N2, N3, otr6);
+
+//	print(R1, image, color5);
+//	print(R2, image, color5);
+//	print(R3, image, color5);
+	print(otr1, image, color2);
+	print(otr2, image, color2);
+	print(otr3, image, color2);
+	print(otr4, image, color2);
+	print(otr5, image, color2);
+	print(otr6, image, color2);
+	print(res1, image, white);
+	print(res2, image, white);
+	print(res3, image, white);
+	print(res4, image, white);
+	print(res5, image, white);
+	print(res6, image, white);
+
+	image.flip_vertically();
+	image.write_tga_file("output.tga");
+	//system("pause");
+	return 0;
+}
