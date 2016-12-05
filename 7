@@ -163,7 +163,6 @@ void SH(Pixel arr[n], int xmin0, int ymin0, int xmax0, int ymax0, TGAImage &imag
 	for (int i = 0; i < n - 1; i++)
 	{
 		otr = CS(arr[i].x, arr[i].y, arr[i + 1].x, arr[i + 1].y, xmin0, ymin0, xmax0, ymax0);
-		cout << otr.x1 << " " << otr.y1 << " " << otr.x2 << " " << otr.y2 << endl;
 		if (otr.x1 == 0 && otr.y1 == 0 && otr.x2 == 0 && otr.y2 == 0)
 			continue;
 		if (otr.x1 == arr[i].x && otr.y1 == arr[i].y)
@@ -201,8 +200,16 @@ void SH(Pixel arr[n], int xmin0, int ymin0, int xmax0, int ymax0, TGAImage &imag
 		}
 		else
 			line(p1.x, p1.y, p.x, p.y, image, color);
-		cout << p1.x << " " << p1.y << endl;
 	}
+}
+
+void VA(Pixel arr[n], int xmin0, int ymin0, int xmax0, int ymax0, TGAImage &image, TGAColor color)
+{
+	Pixel rez[n];
+	for (int i = 0; i < n; i++)
+		rez[i] = arr[i];
+	Pixel p;
+	otrezok otr;
 }
 
 int main()
