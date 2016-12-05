@@ -1,0 +1,153 @@
+#include <iostream>
+#include <cmath>
+#include <cstring>
+#include <stack>
+#include <vector>
+#include "tgaimage.h"
+
+using namespace std;
+
+static const int n = 5;
+
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
+const TGAColor black = TGAColor(0, 0, 0, 0);
+
+const TGAColor color1 = TGAColor(255, 255, 255, 0);
+const TGAColor color2 = TGAColor(255, 255, 0, 255);
+const TGAColor color3 = TGAColor(255, 0, 255, 255);
+const TGAColor color4 = TGAColor(0, 255, 255, 255);
+const TGAColor color5 = TGAColor(255, 0, 255, 155);
+const TGAColor color6 = TGAColor(0, 255, 125, 255);
+
+
+void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color)
+{
+	int deltaX = abs(x2 - x1);
+	int deltaY = abs(y2 - y1);
+	int signX = x1 < x2 ? 1 : -1;
+	int signY = y1 < y2 ? 1 : -1;
+	int error = deltaX - deltaY;
+	image.set(x2, y2, color);
+	while (x1 != x2 || y1 != y2)
+	{
+		image.set(x1, y1, color);
+		if (error * 2 > -deltaY)
+		{
+			error -= deltaY;
+			x1 += signX;
+			continue;
+		}
+		if (error * 2 < deltaX)
+		{
+			error += deltaX;
+			y1 += signY;
+			continue;
+		}
+	}
+}
+
+struct otrezok
+{
+	int x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+};
+
+otrezok rebro(int x1, int y1, int x2, int y2)
+{
+	otrezok o;
+	o.x1 = x1;
+	o.x2 = x2;
+	o.y1 = y1;
+	o.y2 = y2;
+	return o;
+}
+
+void print(otrezok l, TGAImage &image, TGAColor color)
+{
+	line(l.x1, l.y1, l.x2, l.y2, image, color);
+}
+
+struct figura
+{
+	otrezok arr[n];
+};
+
+figura picture(otrezok arr[n])
+{
+	figura f;
+	for (int i = 0; i < n; i++)
+		f.arr[i] = arr[i];
+	return f;
+}
+
+void parallelnyi_perenos(figura F, int x0, int y0, TGAImage &image, TGAColor color)
+{
+	for (int i = 0; i < n; i++)
+		line(F.arr[i].x1 + x0, F.arr[i].y1 + y0, F.arr[i].x2 + x0, F.arr[i].y2 + y0, image, color);
+}
+
+double fcos(int a, int a0, int alpha)
+{
+	double rez = (a - a0)*cos(alpha*0.0174533);
+	return rez;
+}
+
+double fsin(int a, int a0, int alpha)
+{
+	double rez = (a - a0)*sin(alpha*0.0174533);
+	return rez;
+}
+
+void povorot(figura F, int alpha, TGAImage &image, TGAColor color)
+{
+	int x0 = F.arr[0].x1, y0 = F.arr[0].y1;//polus
+	for (int i = 0; i < n; i++)
+	{
+		line((int)(fcos(F.arr[i].x1, x0, alpha) - fsin(F.arr[i].y1, y0, alpha) + x0), (int)(fsin(F.arr[i].x1, x0, alpha) + fcos(F.arr[i].y1, y0, alpha) + y0), (int)(fcos(F.arr[i].x2, x0, alpha) - fsin(F.arr[i].y2, y0, alpha) + x0), (int)(fsin(F.arr[i].x2, x0, alpha) + fcos(F.arr[i].y2, y0, alpha) + y0), image, color);
+	}
+}
+
+
+void mashtab(figura F, int xS, int yS, TGAImage &image, TGAColor color)
+{
+	int x0 = F.arr[0].x1, y0 = F.arr[0].y1;//polus
+	for (int i = 0; i < n; i++)
+		line((F.arr[i].x1 - x0) * xS + x0, (F.arr[i].y1 - y0) * yS + y0, (F.arr[i].x2 - x0) * xS + x0, (F.arr[i].y2 - y0) * yS + y0, image, color);
+}
+
+
+int main()
+{
+	TGAImage image(700, 500, TGAImage::RGB);
+
+	int x10 = 200, y10 = 100, x20 = 350, y20 = 250;
+
+	line(x10, y10, x10, y20, image, color1);
+	line(x10, y20, x20 - 50, y20, image, color2);
+	line(x20 - 50, y20, x20, y20 - 50, image, color3);
+	line(x20, y20 - 50, x20, y10, image, color4);
+	line(x20, y10, x10, y10, image, color5);
+
+	otrezok arr[n];
+	otrezok o1 = rebro(x10, y10, x10, y20);
+	otrezok o2 = rebro(x10, y20, x20 - 50, y20);
+	otrezok o3 = rebro(x20 - 50, y20, x20, y20 - 50);
+	otrezok o4 = rebro(x20, y20 - 50, x20, y10);
+	otrezok o5 = rebro(x20, y10, x10, y10);
+	arr[0] = o1;
+	arr[1] = o2;
+	arr[2] = o3;
+	arr[3] = o4;
+	arr[4] = o5;
+	figura pic = picture(arr);
+
+	//parallelnyi_perenos(pic, 75, 0, image, color6);//sdvig
+	//parallelnyi_perenos(pic, 75, 80, image, white);
+	povorot(pic, 30, image, red);
+	mashtab(pic, 3, 2, image, color6);
+
+	image.flip_vertically();
+	image.write_tga_file("output.tga");
+	//system("pause");
+	return 0;
+}
