@@ -1,0 +1,237 @@
+#include <iostream>
+#include <cmath>
+#include <cstring>
+#include <stack>
+#include <vector>
+#include "tgaimage.h"
+
+using namespace std;
+
+static const int n = 4;
+
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
+
+const TGAColor color1 = TGAColor(255, 255, 255, 0);
+const TGAColor color2 = TGAColor(255, 255, 0, 255);
+const TGAColor color3 = TGAColor(255, 0, 255, 255);
+const TGAColor color4 = TGAColor(0, 255, 255, 255);
+const TGAColor color5 = TGAColor(255, 0, 255, 155);
+const TGAColor color6 = TGAColor(0, 255, 125, 255);
+
+
+void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color)
+{
+	int deltaX = abs(x2 - x1);
+	int deltaY = abs(y2 - y1);
+	int signX = x1 < x2 ? 1 : -1;
+	int signY = y1 < y2 ? 1 : -1;
+	int error = deltaX - deltaY;
+	image.set(x2, y2, color);
+	while (x1 != x2 || y1 != y2)
+	{
+		image.set(x1, y1, color);
+		if (error * 2 > -deltaY)
+		{
+			error -= deltaY;
+			x1 += signX;
+			continue;
+		}
+		if (error * 2 < deltaX)
+		{
+			error += deltaX;
+			y1 += signY;
+			continue;
+		}
+	}
+}
+
+struct code
+{
+	int b3 = 0, b2 = 0, b1 = 0, b0 = 0;
+};
+
+struct otrezok
+{
+	int x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+};
+
+void print(otrezok l, TGAImage &image, TGAColor color)
+{
+	line(l.x1, l.y1, l.x2, l.y2, image, color);
+}
+
+code pointcode(double x, double y, double xmin, double ymin, double xmax, double ymax)
+{
+	code p;
+	p.b3 = x < xmin ? 1 : 0;
+	p.b2 = x > xmax ? 1 : 0;
+	p.b1 = y < ymin ? 1 : 0;
+	p.b0 = y > ymax ? 1 : 0;
+	return p;
+}
+
+otrezok rebro(int x1, int y1, int x2, int y2)
+{
+	otrezok o;
+	o.x1 = x1;
+	o.x2 = x2;
+	o.y1 = y1;
+	o.y2 = y2;
+	return o;
+}
+
+int func1(code p)
+{
+	return (p.b0 == 1 || p.b1 == 1 || p.b2 == 1 || p.b3 == 1);
+}
+
+otrezok CS(int x10, int y10, int x20, int y20, int xmin0, int ymin0, int xmax0, int ymax0)
+{
+	double x1 = x10, y1 = y10, x2 = x20, y2 = y20, xmin = xmin0, ymin = ymin0, xmax = xmax0, ymax = ymax0;
+	otrezok res;
+	code c1 = pointcode(x1, y1, xmin, ymin, xmax, ymax);
+	code c2 = pointcode(x2, y2, xmin, ymin, xmax, ymax);
+	bool k = true;
+	if ((c1.b0 == 0 && c2.b0 == 0) && (c1.b1 == 0 && c2.b1 == 0) && (c1.b2 == 0 && c2.b2 == 0) && (c1.b3 == 0 && c2.b3 == 0))
+	{
+		res.x1 = (int)x1, res.x2 = (int)x2, res.y1 = (int)y1, res.y2 = (int)y2;
+		return res;
+	}
+	if ((c1.b0 == 1 && c2.b0 == 1) || (c1.b1 == 1 && c2.b1 == 1) || (c1.b2 == 1 && c2.b2 == 1) || (c1.b3 == 1 && c2.b3 == 1))
+		return res;
+
+	while ((func1(c1) == 1 || func1(c2) == 1) && (c1.b0 != c2.b0 || c1.b1 != c2.b1 || c1.b2 != c2.b2 || c1.b3 != c2.b3))
+	{
+		if (func1(c1) == 0)
+		{
+			swap(x1, x2), swap(y1, y2);
+			k = false;
+		}
+
+		int signX = x1 < x2 ? 1 : -1;
+		int signY = y1 < y2 ? 1 : -1;
+
+		if (c1.b3 == 1)//left
+		{
+			y1 += signY * abs(xmin - x1) * abs(y2 - y1) / abs(x2 - x1);
+			x1 = xmin;
+		}
+		if (c1.b0 == 1)//up
+		{
+			x1 += signX * abs(y1 - ymax) * abs(x2 - x1) / abs(y2 - y1);
+			y1 = ymax;
+		}
+
+		if (c1.b2 == 1)//right
+		{
+			y1 += signY * abs(x1 - xmax) * abs(y2 - y1) / abs(x2 - x1);
+			x1 = xmax;
+		}
+		if (c1.b1 == 1)//down
+		{
+			x1 += signX * abs(ymin - y1) * abs(x2 - x1) / abs(y2 - y1);
+			y1 = ymin;
+		}
+		c1 = pointcode(x1, y1, xmin, ymin, xmax, ymax);
+		c2 = pointcode(x2, y2, xmin, ymin, xmax, ymax);
+	}
+	if (k == false)
+		swap(x1, x2), swap(y1, y2);
+	res.x1 = (int)x1, res.x2 = (int)x2, res.y1 = (int)y1, res.y2 = (int)y2;
+	return res;
+}
+
+struct Pixel
+{
+	int x, y;
+};
+
+Pixel point (int x, int y)
+{
+	Pixel p;
+	p.x = x;
+	p.y = y;
+	return p;
+}
+
+void SH(Pixel arr[n], int xmin0, int ymin0, int xmax0, int ymax0, TGAImage &image, TGAColor color)
+{
+	stack <Pixel> rez;
+	Pixel p, p1, p2;
+	otrezok otr;
+	for (int i = 0; i < n - 1; i++)
+	{
+		otr = CS(arr[i].x, arr[i].y, arr[i + 1].x, arr[i + 1].y, xmin0, ymin0, xmax0, ymax0);
+		cout << otr.x1 << " " << otr.y1 << " " << otr.x2 << " " << otr.y2 << endl;
+		if (otr.x1 == 0 && otr.y1 == 0 && otr.x2 == 0 && otr.y2 == 0)
+			continue;
+		if (otr.x1 == arr[i].x && otr.y1 == arr[i].y)
+			p.x = otr.x2, p.y = otr.y2, rez.push(p);
+		else
+		{
+			p1.x = otr.x1; 
+			p1.y = otr.y1; 
+			p2.x = otr.x2;
+			p2.y = otr.y2;
+			rez.push(p1);
+			rez.push(p2);
+		}	
+	}
+	otr = CS(arr[n - 1].x, arr[n - 1].y, arr[0].x, arr[0].y, xmin0, ymin0, xmax0, ymax0);
+	if (!(otr.x1 == 0 && otr.y1 == 0 && otr.x2 == 0 && otr.y2 == 0))
+	{
+		if (otr.x1 == arr[n - 1].x && otr.y1 == arr[n - 1].y)
+			p.x = otr.x2, p.y = otr.y2, rez.push(p);
+		else
+		{
+			p.x = otr.x1, p.y = otr.y1, rez.push(p);
+			p.x = otr.x2, p.y = otr.y2, rez.push(p);
+		}
+	}
+	p = rez.top();
+	while (!rez.empty())
+	{
+		p1 = rez.top();
+		rez.pop();
+		if (!rez.empty())
+		{
+			p2 = rez.top();
+			line(p1.x, p1.y, p2.x, p2.y, image, color);
+		}
+		else
+			line(p1.x, p1.y, p.x, p.y, image, color);
+		cout << p1.x << " " << p1.y << endl;
+	}
+}
+
+int main()
+{
+	TGAImage image(700, 500, TGAImage::RGB);
+
+	int x10 = 100, y10 = 100, x20 = 500, y20 = 400;
+
+	line(x10, y10, x20, y10, image, color1);
+	line(x20, y10, x20, y20, image, color4);
+	line(x20, y20, x10, y20, image, color3);
+	line(x10, y20, x10, y10, image, color2);
+
+	Pixel arr[n];
+	arr[0].x = 150, arr[0].y = 150;
+	arr[1].x = 200, arr[1].y = 400;
+	arr[2].x = 500, arr[2].y = 500;
+	arr[3].x = 350, arr[3].y = 0;
+
+	line(arr[0].x, arr[0].y, arr[1].x, arr[1].y, image, color1);
+	line(arr[1].x, arr[1].y, arr[2].x, arr[2].y, image, color1);
+	line(arr[2].x, arr[2].y, arr[3].x, arr[3].y, image, color1);
+	line(arr[3].x, arr[3].y, arr[0].x, arr[0].y, image, color1);
+
+	SH(arr, x10, y10, x20, y20, image, red);
+
+
+	image.flip_vertically();
+	image.write_tga_file("output.tga");
+	system("pause");
+	return 0;
+}
