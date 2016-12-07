@@ -8,6 +8,36 @@
 
 using namespace std;
 
+void printm(double **matr, int a, int b)//vyvod
+{
+	for (int i = 0; i < a; ++i)
+	{
+		for (int j = 0; j < b; ++j)
+		{
+			cout << matr[i][j] << "\t";
+		}
+		cout << endl;
+	}
+	cout << endl;
+}
+
+double** proizvmatrs(double** matr1, double** matr2, int m, int n, int p)//matr1*matr2
+{
+	double** matr12 = new double*[m];
+	for (int i = 0; i < m; ++i)
+	{
+		matr12[i] = new double[p];
+		for (int j = 0; j < p; j++)
+		{
+			double s = 0;//obnulenie peremennoi
+			for (int r = 0; r < n; r++)
+				s += matr1[i][r] * matr2[r][j];//formula
+			matr12[i][j] = s;//zapolnenie massiva
+		}
+	}
+	return matr12;
+}
+
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
 
@@ -39,29 +69,27 @@ void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color) //Alg
 
 int main()
 {
-	TGAImage image(2000, 2500, TGAImage::RGB);
-	double r = - 0.8;
+	TGAImage image(3000, 3000, TGAImage::RGB);
 	ifstream in;
 	char str[255];
 	char *p, *context1, *context2, *v1, *v2, *v3, *f1, *f2, *f3;
-	double a1 = 0, a2 = 0, a3 = 0;
-	int b1 = 0, b2 = 0, b3 = 0;
+	double a1 = 0, a2 = 0, a3 = 0, b1 = 0, b2 = 0, b3 = 0;
 	in.open("african_head.obj");
-	int k = 0;
+	int k = 0;//kolichestvo v (tochek)
 	while (!(in.eof()))
 	{
 		in.getline(str, 255);
-		if (str[0] == 'v') k++;
+		if (str[0] == 'v' && str[1] == ' ') k++;
 	}
 	in.close();
-	int** arrk = new int*[k];
+	double** arrk = new double*[k];
 	for (int i = 0; i < k; i++)
-		arrk[i] = new int[4];
+		arrk[i] = new double[4];
 	for (int i = 0; i < k; i++)
 		for (int j = 0; j < 4; j++)
 			arrk[i][j] = 0;
 	in.open("african_head.obj");
-	int l = 0;
+	int l = 0;//kolichestvo f (treugol'nikov)
 	while (!(in.eof()))
 	{
 		in.getline(str, 255);
@@ -76,23 +104,21 @@ int main()
 			arrl[i][j] = 0;
 	in.open("african_head.obj");
 	int i = 0;
-
 	while (!(in.eof()))
 	{
 		in.getline(str, 255);
-		if (str[0] == 'v')
+		if (str[0] == 'v' && str[1] == ' ')
 		{
 			p = strtok_s(str, " ", &context1);
 			v1 = strtok_s(NULL, " ", &context1);
 			v2 = strtok_s(NULL, " ", &context1);
 			v3 = strtok_s(NULL, " ", &context1);
 			a1 = atof(v1), a2 = atof(v2), a3 = atof(v3);
-			arrk[i][0] = int(a1 / (r * a3 + 1) * 1000), arrk[i][1] = int(a2 / (r * a3 + 1) * 1000), arrk[i][2] = int(a3 / (r * a3 + 1) * 1000);
+			arrk[i][0] = a1, arrk[i][1] = a2, arrk[i][2] = a3;
 			arrk[i][3] = 1;
 			i++;
 		}
 	}
-
 	in.close();
 	in.open("african_head.obj");
 	int j = 0;
@@ -112,15 +138,146 @@ int main()
 	}
 	in.close();
 
+	double ppx = 1500, ppy = 1500, ppz = 0;//perenos
+	double mashx = 1500, mashy = 1500, mashz = 1500;//mashtab
+	double alphaX = 30 * 3.14159265358979323846264 / 180;//povorotX
+	double alphaY = 60 * 3.14159265358979323846264 / 180;
+	double alphaZ = -10 * 3.14159265358979323846264 / 180;
+	double r = -1000000000;
+
+	double **matrParPeren = new double *[4];
+	for (int i = 0; i < 4; ++i)
+	{
+		matrParPeren[i] = new double[4];//pervaya matrica m*n
+		for (int j = 0; j < 4; ++j)
+			if (i == j)
+				matrParPeren[i][j] = 1;//zapolnenie massiva
+			else
+				matrParPeren[i][j] = 0;//zapolnenie massiva
+	}
+	matrParPeren[3][0] = ppx, matrParPeren[3][1] = ppy, matrParPeren[3][2] = ppz;
+	printm(matrParPeren, 4, 4);
+
+	double **matrMasht = new double *[4];
+	for (int i = 0; i < 4; ++i)
+	{
+		matrMasht[i] = new double[4];//pervaya matrica m*n
+		for (int j = 0; j < 4; ++j)
+			if (i == j)
+				matrMasht[i][j] = 1;//zapolnenie massiva
+			else
+				matrMasht[i][j] = 0;//zapolnenie massiva
+	}
+	matrMasht[0][0] = mashx, matrMasht[1][1] = mashy, matrMasht[2][2] = mashz;
+	printm(matrMasht, 4, 4);
+
+	double **matrPovPoX = new double *[4];
+	for (int i = 0; i < 4; ++i)
+	{
+		matrPovPoX[i] = new double[4];//pervaya matrica m*n
+		for (int j = 0; j < 4; ++j)
+			if (i == j)
+				matrPovPoX[i][j] = 1;//zapolnenie massiva
+			else
+				matrPovPoX[i][j] = 0;//zapolnenie massiva
+	}
+	double sinalphaX = sin(alphaX), cosalphaX = cos(alphaX);
+	matrPovPoX[1][1] = cosalphaX, matrPovPoX[2][2] = cosalphaX, matrPovPoX[2][1] = sinalphaX, matrPovPoX[1][2] = -sinalphaX;
+	printm(matrPovPoX, 4, 4);
+
+	double **matrPovPoY = new double *[4];
+	for (int i = 0; i < 4; ++i)
+	{
+		matrPovPoY[i] = new double[4];//pervaya matrica m*n
+		for (int j = 0; j < 4; ++j)
+			if (i == j)
+				matrPovPoY[i][j] = 1;//zapolnenie massiva
+			else
+				matrPovPoY[i][j] = 0;//zapolnenie massiva
+	}
+	double sinalphaY = sin(alphaY), cosalphaY = cos(alphaY);
+	matrPovPoY[0][0] = cosalphaY, matrPovPoY[2][2] = cosalphaY, matrPovPoY[0][2] = sinalphaY, matrPovPoY[2][0] = -sinalphaY;
+	printm(matrPovPoY, 4, 4);
+
+	double **matrPovPoZ = new double *[4];
+	for (int i = 0; i < 4; ++i)
+	{
+		matrPovPoZ[i] = new double[4];//pervaya matrica m*n
+		for (int j = 0; j < 4; ++j)
+			if (i == j)
+				matrPovPoZ[i][j] = 1;//zapolnenie massiva
+			else
+				matrPovPoZ[i][j] = 0;//zapolnenie massiva
+	}
+	double sinalphaZ = sin(alphaZ), cosalphaZ = cos(alphaZ);
+	matrPovPoZ[0][0] = cosalphaZ, matrPovPoZ[1][1] = cosalphaZ, matrPovPoZ[1][0] = sinalphaZ, matrPovPoZ[0][1] = -sinalphaZ;
+	printm(matrPovPoZ, 4, 4);
+
+	double **matrPerPreobr = new double *[4];
+	for (int i = 0; i < 4; ++i)
+	{
+		matrPerPreobr[i] = new double[4];//pervaya matrica m*n
+		for (int j = 0; j < 4; ++j)
+			if (i == j)
+				matrPerPreobr[i][j] = 1;//zapolnenie massiva
+			else
+				matrPerPreobr[i][j] = 0;//zapolnenie massiva
+	}
+	matrPerPreobr[2][3] = -1/r;
+	printm(matrPerPreobr, 4, 4);
+
+	double** matrKoord = proizvmatrs(proizvmatrs(proizvmatrs(proizvmatrs(proizvmatrs(matrPovPoX, matrPovPoY, 4, 4, 4), matrPovPoZ, 4, 4, 4), matrMasht, 4, 4, 4), matrParPeren, 4, 4, 4), matrPerPreobr, 4, 4, 4);
+	printm(matrKoord, 4, 4);
+
 	for (int i = 0; i < l; i++)
 	{
 		int p1 = arrl[i][0] - 1, p2 = arrl[i][1] - 1, p3 = arrl[i][2] - 1;
-		int xA = arrk[p1][0] + 1000, yA = arrk[p1][1] + 1000;
-		int xB = arrk[p2][0] + 1000, yB = arrk[p2][1] + 1000;
-		int xC = arrk[p3][0] + 1000, yC = arrk[p3][1] + 1000;
-		line(xA, yA, xB, yB, image, white);
-		line(xA, yA, xC, yC, image, white);
-		line(xB, yB, xC, yC, image, white);
+		double xA = arrk[p1][0], yA = arrk[p1][1], zA = arrk[p1][2];
+		double xB = arrk[p2][0], yB = arrk[p2][1], zB = arrk[p2][2];
+		double xC = arrk[p3][0], yC = arrk[p3][1], zC = arrk[p3][2];
+
+		double **matrKoordA = new double *[1];//vector coordinat A
+		for (int i = 0; i < 1; ++i)
+			matrKoordA[i] = new double[4];
+		matrKoordA[0][0] = xA;//zapolnenie massiva
+		matrKoordA[0][1] = yA;//zapolnenie massiva
+		matrKoordA[0][2] = zA;//zapolnenie massiva
+		matrKoordA[0][3] = 1;//zapolnenie massiva
+
+		double** matrItogA = proizvmatrs(matrKoordA, matrKoord, 1, 4, 4);
+		for (int i = 0; i < 4; i++)
+			matrItogA[0][i] /= matrItogA[0][3];
+		printm(matrItogA, 1, 4);
+
+		double **matrKoordB = new double *[1];//vector coordinat A
+		for (int i = 0; i < 1; ++i)
+			matrKoordB[i] = new double[4];
+		matrKoordB[0][0] = xB;//zapolnenie massiva
+		matrKoordB[0][1] = yB;//zapolnenie massiva
+		matrKoordB[0][2] = zB;//zapolnenie massiva
+		matrKoordB[0][3] = 1;//zapolnenie massiva
+
+		double** matrItogB = proizvmatrs(matrKoordB, matrKoord, 1, 4, 4);
+		for (int i = 0; i < 4; i++)
+			matrItogB[0][i] /= matrItogB[0][3];
+		printm(matrItogB, 1, 4);
+
+		double **matrKoordC = new double *[1];//vector coordinat A
+		for (int i = 0; i < 1; ++i)
+			matrKoordC[i] = new double[4];
+		matrKoordC[0][0] = xC;//zapolnenie massiva
+		matrKoordC[0][1] = yC;//zapolnenie massiva
+		matrKoordC[0][2] = zC;//zapolnenie massiva
+		matrKoordC[0][3] = 1;//zapolnenie massiva
+
+		double** matrItogC = proizvmatrs(matrKoordC, matrKoord, 1, 4, 4);
+		for (int i = 0; i < 4; i++)
+			matrItogC[0][i] /= matrItogC[0][3];
+		printm(matrItogC, 1, 4);
+
+		line(matrItogA[0][0], matrItogA[0][1], matrItogB[0][0], matrItogB[0][1], image, white);
+		line(matrItogA[0][0], matrItogA[0][1], matrItogC[0][0], matrItogC[0][1], image, white);
+		line(matrItogB[0][0], matrItogB[0][1], matrItogC[0][0], matrItogC[0][1], image, white);
 	}
 
 	image.flip_vertically();
