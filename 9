@@ -140,10 +140,10 @@ int main()
 
 	double ppx = 1500, ppy = 1500, ppz = 0;//perenos
 	double mashx = 1500, mashy = 1500, mashz = 1500;//mashtab
-	double alphaX = 30 * 3.14159265358979323846264 / 180;//povorotX
-	double alphaY = 60 * 3.14159265358979323846264 / 180;
-	double alphaZ = -10 * 3.14159265358979323846264 / 180;
-	double r = -1000000000;
+	double alphaX = 0 * 3.14159265358979323846264 / 180;//povorotX
+	double alphaY = 0 * 3.14159265358979323846264 / 180;
+	double alphaZ = 0 * 3.14159265358979323846264 / 180;
+	double r = 2000;
 
 	double **matrParPeren = new double *[4];
 	for (int i = 0; i < 4; ++i)
@@ -226,7 +226,7 @@ int main()
 	matrPerPreobr[2][3] = -1/r;
 	printm(matrPerPreobr, 4, 4);
 
-	double** matrKoord = proizvmatrs(proizvmatrs(proizvmatrs(proizvmatrs(proizvmatrs(matrPovPoX, matrPovPoY, 4, 4, 4), matrPovPoZ, 4, 4, 4), matrMasht, 4, 4, 4), matrParPeren, 4, 4, 4), matrPerPreobr, 4, 4, 4);
+	double** matrKoord = proizvmatrs(proizvmatrs(proizvmatrs(proizvmatrs(proizvmatrs(matrPovPoX, matrPovPoY, 4, 4, 4), matrPovPoZ, 4, 4, 4), matrMasht, 4, 4, 4), matrPerPreobr, 4, 4, 4), matrParPeren, 4, 4, 4);
 	printm(matrKoord, 4, 4);
 
 	for (int i = 0; i < l; i++)
