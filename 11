@@ -397,9 +397,8 @@ int main()
 
 	for (int i = 0; i < 3000; i++)
 		for (int j = 0; j < 3000; j++)
-			if (CBufer[i][j] != -3000)
+			if (CBufer[i][j] > 0)
 			{
-				if (CBufer[i][j] < 0) CBufer[i][j] = 1;
 				I = round(CBufer[i][j] * 255);
 				TGAColor Col = TGAColor(I, I, I, I);
 				image.set(i, j, Col);
