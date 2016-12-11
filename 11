@@ -8,44 +8,7 @@
 
 using namespace std;
 
-/*
-void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color)
-{
-int deltaX = abs(x2 - x1);
-int deltaY = abs(y2 - y1);
-int signX = x1 < x2 ? 1 : -1;
-int signY = y1 < y2 ? 1 : -1;
-image.set(x2, y2, color);
-if (deltaX > deltaY)
-{
-int error = 2 * deltaY - deltaX;
-while (x1 != x2)
-{
-image.set(x1, y1, color);
-if (error < 0) error += 2 * deltaY;
-else error += 2 * deltaY - 2 * deltaX, y1 += signY;
-x1 += signX;
-}
-}
-else
-{
-int error = 2 * deltaX - deltaY;
-while (y1 != y2)
-{
-image.set(x1, y1, color);
-if (error < 0) error += 2 * deltaX;
-else error += 2 * deltaX - 2 * deltaY, x1 += signX;
-y1 += signY;
-}
-}
-}*/
-
 struct Pixel
-{
-	int x, y, z;
-};
-
-struct Normal
 {
 	int x, y, z;
 };
