@@ -1,0 +1,468 @@
+#include <iostream>
+#include <cmath>
+#include <stack>
+#include <vector>
+#include <cstring>
+#include <fstream>
+#include "tgaimage.h"
+
+using namespace std;
+
+/*
+void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color)
+{
+int deltaX = abs(x2 - x1);
+int deltaY = abs(y2 - y1);
+int signX = x1 < x2 ? 1 : -1;
+int signY = y1 < y2 ? 1 : -1;
+image.set(x2, y2, color);
+if (deltaX > deltaY)
+{
+int error = 2 * deltaY - deltaX;
+while (x1 != x2)
+{
+image.set(x1, y1, color);
+if (error < 0) error += 2 * deltaY;
+else error += 2 * deltaY - 2 * deltaX, y1 += signY;
+x1 += signX;
+}
+}
+else
+{
+int error = 2 * deltaX - deltaY;
+while (y1 != y2)
+{
+image.set(x1, y1, color);
+if (error < 0) error += 2 * deltaX;
+else error += 2 * deltaX - 2 * deltaY, x1 += signX;
+y1 += signY;
+}
+}
+}*/
+
+struct Pixel
+{
+	int x, y, z;
+};
+
+struct Normal
+{
+	double x, y, z;
+};
+
+struct Rebro
+{
+	int x1, y1, z1, x2, y2, z2;
+};
+
+double SkalPr(Normal N1, Normal N2)
+{
+	double res = 0;
+	res = N1.x*N2.x + N1.y*N2.y + N1.z*N2.z;
+	return res;
+}
+
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
+
+int main()
+{
+	TGAImage image(3000, 3000, TGAImage::RGB);
+	ifstream in;
+	char str[255];
+	char *p, *context1, *context2, *v1, *v2, *v3, *f1, *f2, *f3, *vn1, *vn2, *vn3;
+	double a1 = 0, a2 = 0, a3 = 0, c1 = 0, c2 = 0, c3 = 0;
+	int b1 = 0, b2 = 0, b3 = 0;
+	in.open("african_head.obj");
+	int v = 0;//kolichestvo v (tochek)
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'v' && str[1] == ' ') v++;
+	}
+	in.close();
+	double** arrv = new double*[v];
+	for (int i = 0; i < v; i++)
+		arrv[i] = new double[4];
+	for (int i = 0; i < v; i++)
+		for (int j = 0; j < 4; j++)
+			arrv[i][j] = 0;
+	in.open("african_head.obj");
+	int f = 0;//kolichestvo f (treugol'nikov)
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'f') f++;
+	}
+	in.close();
+	int** arrf = new int*[f];
+	for (int i = 0; i < f; i++)
+		arrf[i] = new int[3];
+	for (int i = 0; i < f; i++)
+		for (int j = 0; j < 3; j++)
+			arrf[i][j] = 0;
+	in.open("african_head.obj");
+	int vn = 0;//kolichestvo vn (normalei)
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'v' && str[1] == 'n') vn++;
+	}
+	in.close();
+	double** arrvn = new double*[vn];
+	for (int i = 0; i < vn; i++)
+		arrvn[i] = new double[3];
+	for (int i = 0; i < vn; i++)
+		for (int j = 0; j < 3; j++)
+			arrvn[i][j] = 0;
+	in.open("african_head.obj");
+	int i = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'v' && str[1] == ' ')
+		{
+			p = strtok_s(str, " ", &context1);
+			v1 = strtok_s(NULL, " ", &context1);
+			v2 = strtok_s(NULL, " ", &context1);
+			v3 = strtok_s(NULL, " ", &context1);
+			a1 = atof(v1), a2 = atof(v2), a3 = atof(v3);
+			arrv[i][0] = a1, arrv[i][1] = a2, arrv[i][2] = a3;
+			arrv[i][3] = 1;
+			i++;
+		}
+	}
+	in.close();
+	in.open("african_head.obj");
+	i = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'f')
+		{
+			p = strtok_s(str, " ", &context1);
+			f1 = strtok_s(NULL, " ", &context1);
+			f2 = strtok_s(NULL, " ", &context1);
+			f3 = strtok_s(NULL, " ", &context1);
+			b1 = atoi(strtok_s(f1, "/", &context2)), b2 = atoi(strtok_s(f2, "/", &context2)), b3 = atoi(strtok_s(f3, "/", &context2));
+			arrf[i][0] = b1, arrf[i][1] = b2, arrf[i][2] = b3;
+			i++;
+		}
+	}
+	in.close();
+	in.open("african_head.obj");
+	i = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'v' && str[1] == 'n')
+		{
+			p = strtok_s(str, " ", &context1);
+			vn1 = strtok_s(NULL, " ", &context1);
+			vn2 = strtok_s(NULL, " ", &context1);
+			vn3 = strtok_s(NULL, " ", &context1);
+			c1 = atof(vn1), c2 = atof(vn2), c3 = atof(vn3);
+			arrvn[i][0] = c1, arrvn[i][1] = c2, arrvn[i][2] = c3;
+			i++;
+		}
+	}
+	in.close();
+
+	Normal L;
+	L.x = 0, L.y = 0, L.z = 1;
+
+	Normal **NBufer = new Normal *[3000];
+	for (int i = 0; i < 3000; ++i)
+		NBufer[i] = new Normal[3000];
+
+	for (int i = 0; i < 3000; i++)
+		for (int j = 0; j < 3000; j++)
+			NBufer[i][j].x = -3000, NBufer[i][j].y = -3000, NBufer[i][j].z = -3000;
+
+	Normal N;
+
+	for (int i = 0; i < vn; i++)
+	{
+		N.x = arrvn[i][0], N.y = arrvn[i][1], N.z = arrvn[i][2];
+		int x = 1500 + round(1500 * arrv[i][0]), y = 1500 + round(1500 * arrv[i][1]);
+		if (SkalPr(NBufer[x][y], L) < SkalPr(N, L)) NBufer[x][y].x = N.x, NBufer[x][y].y = N.y, NBufer[x][y].z = N.z;
+	}
+
+	for (int i = 0; i < f; i++)
+	{
+		int p1 = arrf[i][0] - 1, p2 = arrf[i][1] - 1, p3 = arrf[i][2] - 1;
+		int xA = 1500 + round(1500 * arrv[p1][0]), yA = 1500 + round(1500 * arrv[p1][1]);
+		int xB = 1500 + round(1500 * arrv[p2][0]), yB = 1500 + round(1500 * arrv[p2][1]);
+		int xC = 1500 + round(1500 * arrv[p3][0]), yC = 1500 + round(1500 * arrv[p3][1]);
+
+		Rebro R1, R2, R3;
+		R1.x1 = xA, R1.x2 = xB, R1.y1 = yA, R1.y2 = yB, R1.z1 = 0, R1.z2 = 0;
+		R2.x1 = xB, R2.x2 = xC, R2.y1 = yB, R2.y2 = yC, R2.z1 = 0, R2.z2 = 0;
+		R3.x1 = xC, R3.x2 = xA, R3.y1 = yC, R3.y2 = yA, R3.z1 = 0, R3.z2 = 0;
+
+		vector <Pixel> list1, list2, list3;
+		Pixel Z;
+		Z.z = 0;
+
+		int deltaX = abs(R1.x2 - R1.x1);
+		int deltaY = abs(R1.y2 - R1.y1);
+		double deltaNx = abs(NBufer[R1.x2][R1.y2].x - NBufer[R1.x1][R1.y1].y);
+		double deltaNy = abs(NBufer[R1.x2][R1.y2].y - NBufer[R1.x1][R1.y1].y);
+		double deltaNz = abs(NBufer[R1.x2][R1.y2].z - NBufer[R1.x1][R1.y1].z);
+		int signX = R1.x1 < R1.x2 ? 1 : -1;
+		int signY = R1.y1 < R1.y2 ? 1 : -1;
+		int signNx = NBufer[R1.x1][R1.y1].x < NBufer[R1.x2][R1.y2].x ? 1 : -1;
+		int signNy = NBufer[R1.x1][R1.y1].y < NBufer[R1.x2][R1.y2].y ? 1 : -1;
+		int signNz = NBufer[R1.x1][R1.y1].z < NBufer[R1.x2][R1.y2].z ? 1 : -1;
+		Z.x = R1.x1, Z.y = R1.y1, Z.z = R1.z1;
+		list1.push_back(Z);
+		int kolN = deltaX > deltaY ? deltaX : deltaY;
+		double lyambdax = 0, lyambday = 0, lyambdaz = 0;
+		Normal tmpN = NBufer[R1.x1][R1.y1];
+		if (deltaX > deltaY)
+		{
+			int error = 2 * deltaY - deltaX;
+			while (R1.x1 != R1.x2)
+			{
+				if (error < 0) error += 2 * deltaY;
+				else error += 2 * deltaY - 2 * deltaX, R1.y1 += signY;
+				R1.x1 += signX;
+				lyambdax += (double)(deltaNx / kolN);
+				lyambday += (double)(deltaNy / kolN);
+				lyambdaz += (double)(deltaNz / kolN);
+				N.x = tmpN.x + signNx*lyambdax;
+				N.y = tmpN.y + signNy*lyambday;
+				N.z = tmpN.z + signNz*lyambdaz;
+				if (SkalPr(NBufer[R1.x1][R1.y1], L) < SkalPr(N, L)) NBufer[R1.x1][R1.y1].x = N.x, NBufer[R1.x1][R1.y1].y = N.y, NBufer[R1.x1][R1.y1].z = N.z;
+				Z.x = R1.x1, Z.y = R1.y1, Z.z = R1.z1;
+				list1.push_back(Z);
+			}
+		}
+		else
+		{
+			int error = 2 * deltaX - deltaY;
+			while (R1.y1 != R1.y2)
+			{
+				if (error < 0) error += 2 * deltaX;
+				else error += 2 * deltaX - 2 * deltaY, R1.x1 += signX;
+				R1.y1 += signY;
+				lyambdax += (double)(deltaNx / kolN);
+				lyambday += (double)(deltaNy / kolN);
+				lyambdaz += (double)(deltaNz / kolN);
+				N.x = tmpN.x + signNx*lyambdax;
+				N.y = tmpN.y + signNy*lyambday;
+				N.z = tmpN.z + signNz*lyambdaz;
+				if (SkalPr(NBufer[R1.x1][R1.y1], L) < SkalPr(N, L)) NBufer[R1.x1][R1.y1].x = N.x, NBufer[R1.x1][R1.y1].y = N.y, NBufer[R1.x1][R1.y1].z = N.z;
+				Z.x = R1.x1, Z.y = R1.y1, Z.z = R1.z1;
+				list1.push_back(Z);
+			}
+		}
+
+		deltaX = abs(R2.x2 - R2.x1);
+		deltaY = abs(R2.y2 - R2.y1);
+		deltaNx = abs(NBufer[R2.x2][R2.y2].x - NBufer[R2.x1][R2.y1].y);
+		deltaNy = abs(NBufer[R2.x2][R2.y2].y - NBufer[R2.x1][R2.y1].y);
+		deltaNz = abs(NBufer[R2.x2][R2.y2].z - NBufer[R2.x1][R2.y1].z);
+		signX = R2.x1 < R2.x2 ? 1 : -1;
+		signY = R2.y1 < R2.y2 ? 1 : -1;
+		signNx = NBufer[R2.x1][R2.y1].x < NBufer[R2.x2][R2.y2].x ? 1 : -1;
+		signNy = NBufer[R2.x1][R2.y1].y < NBufer[R2.x2][R2.y2].y ? 1 : -1;
+		signNz = NBufer[R2.x1][R2.y1].z < NBufer[R2.x2][R2.y2].z ? 1 : -1;
+		Z.x = R2.x1, Z.y = R2.y1, Z.z = R2.z1;
+		list2.push_back(Z);
+		kolN = deltaX > deltaY ? deltaX : deltaY;
+		lyambdax = 0, lyambday = 0, lyambdaz = 0;
+		tmpN = NBufer[R2.x1][R2.y1];
+		if (deltaX > deltaY)
+		{
+			int error = 2 * deltaY - deltaX;
+			while (R2.x1 != R2.x2)
+			{
+				if (error < 0) error += 2 * deltaY;
+				else error += 2 * deltaY - 2 * deltaX, R2.y1 += signY;
+				R2.x1 += signX;
+				lyambdax += (double)(deltaNx / kolN);
+				lyambday += (double)(deltaNy / kolN);
+				lyambdaz += (double)(deltaNz / kolN);
+				N.x = tmpN.x + signNx*lyambdax;
+				N.y = tmpN.y + signNy*lyambday;
+				N.z = tmpN.z + signNz*lyambdaz;
+				if (SkalPr(NBufer[R2.x1][R2.y1], L) < SkalPr(N, L)) NBufer[R2.x1][R2.y1].x = N.x, NBufer[R2.x1][R2.y1].y = N.y, NBufer[R2.x1][R2.y1].z = N.z;
+				Z.x = R2.x1, Z.y = R2.y1, Z.z = R2.z1;
+				list2.push_back(Z);
+			}
+		}
+		else
+		{
+			int error = 2 * deltaX - deltaY;
+			while (R2.y1 != R2.y2)
+			{
+				if (error < 0) error += 2 * deltaX;
+				else error += 2 * deltaX - 2 * deltaY, R2.x1 += signX;
+				R2.y1 += signY;
+				lyambdax += (double)(deltaNx / kolN);
+				lyambday += (double)(deltaNy / kolN);
+				lyambdaz += (double)(deltaNz / kolN);
+				N.x = tmpN.x + signNx*lyambdax;
+				N.y = tmpN.y + signNy*lyambday;
+				N.z = tmpN.z + signNz*lyambdaz;
+				if (SkalPr(NBufer[R2.x1][R2.y1], L) < SkalPr(N, L)) NBufer[R2.x1][R2.y1].x = N.x, NBufer[R2.x1][R2.y1].y = N.y, NBufer[R2.x1][R2.y1].z = N.z;
+				Z.x = R2.x1, Z.y = R2.y1, Z.z = R2.z1;
+				list2.push_back(Z);
+			}
+		}
+
+		deltaX = abs(R3.x2 - R3.x1);
+		deltaY = abs(R3.y2 - R3.y1);
+		deltaNx = abs(NBufer[R3.x2][R3.y2].x - NBufer[R3.x1][R3.y1].y);
+		deltaNy = abs(NBufer[R3.x2][R3.y2].y - NBufer[R3.x1][R3.y1].y);
+		deltaNz = abs(NBufer[R3.x2][R3.y2].z - NBufer[R3.x1][R3.y1].z);
+		signX = R3.x1 < R3.x2 ? 1 : -1;
+		signY = R3.y1 < R3.y2 ? 1 : -1;
+		signNx = NBufer[R3.x1][R3.y1].x < NBufer[R3.x2][R3.y2].x ? 1 : -1;
+		signNy = NBufer[R3.x1][R3.y1].y < NBufer[R3.x2][R3.y2].y ? 1 : -1;
+		signNz = NBufer[R3.x1][R3.y1].z < NBufer[R3.x2][R3.y2].z ? 1 : -1;
+		Z.x = R3.x1, Z.y = R3.y1, Z.z = R3.z1;
+		list3.push_back(Z);
+		kolN = deltaX > deltaY ? deltaX : deltaY;
+		lyambdax = 0, lyambday = 0, lyambdaz = 0;
+		tmpN = NBufer[R3.x1][R3.y1];
+		if (deltaX > deltaY)
+		{
+			int error = 2 * deltaY - deltaX;
+			while (R3.x1 != R3.x2)
+			{
+				if (error < 0) error += 2 * deltaY;
+				else error += 2 * deltaY - 2 * deltaX, R3.y1 += signY;
+				R3.x1 += signX;
+				lyambdax += (double)(deltaNx / kolN);
+				lyambday += (double)(deltaNy / kolN);
+				lyambdaz += (double)(deltaNz / kolN);
+				N.x = tmpN.x + signNx*lyambdax;
+				N.y = tmpN.y + signNy*lyambday;
+				N.z = tmpN.z + signNz*lyambdaz;
+				if (SkalPr(NBufer[R3.x1][R3.y1], L) < SkalPr(N, L)) NBufer[R3.x1][R3.y1].x = N.x, NBufer[R3.x1][R3.y1].y = N.y, NBufer[R3.x1][R3.y1].z = N.z;
+				Z.x = R3.x1, Z.y = R3.y1, Z.z = R3.z1;
+				list3.push_back(Z);
+			}
+		}
+		else
+		{
+			int error = 2 * deltaX - deltaY;
+			while (R3.y1 != R3.y2)
+			{
+				if (error < 0) error += 2 * deltaX;
+				else error += 2 * deltaX - 2 * deltaY, R3.x1 += signX;
+				R3.y1 += signY;
+				lyambdax += (double)(deltaNx / kolN);
+				lyambday += (double)(deltaNy / kolN);
+				lyambdaz += (double)(deltaNz / kolN);
+				N.x = tmpN.x + signNx*lyambdax;
+				N.y = tmpN.y + signNy*lyambday;
+				N.z = tmpN.z + signNz*lyambdaz;
+				if (SkalPr(NBufer[R3.x1][R3.y1], L) < SkalPr(N, L)) NBufer[R3.x1][R3.y1].x = N.x, NBufer[R3.x1][R3.y1].y = N.y, NBufer[R3.x1][R3.y1].z = N.z;
+				Z.x = R3.x1, Z.y = R3.y1, Z.z = R3.z1;
+				list3.push_back(Z);
+			}
+		}
+
+		vector<Pixel> fulllist;
+		fulllist.insert(fulllist.end(), list1.begin(), list1.end());
+		fulllist.insert(fulllist.end(), list2.begin(), list2.end());
+		fulllist.insert(fulllist.end(), list3.begin(), list3.end());
+
+		for (int i = 1; i < fulllist.size(); i++)
+			for (int j = 0; j < fulllist.size() - i; j++)
+				if (fulllist[j].y > fulllist[j + 1].y)
+					swap(fulllist[j], fulllist[j + 1]);
+
+		for (int i = 1; i < fulllist.size(); i++)
+			for (int j = 0; j < fulllist.size() - i; j++)
+				if (fulllist[j].y == fulllist[j + 1].y && fulllist[j].x > fulllist[j + 1].x)
+					swap(fulllist[j], fulllist[j + 1]);
+
+		Pixel Point1, Point2;
+		while (!fulllist.empty())
+		{
+			Point1 = fulllist.back();
+			fulllist.pop_back();
+			if (!fulllist.empty())
+			{
+				Point2 = fulllist.back(), fulllist.pop_back();
+				deltaX = abs(Point2.x - Point1.x);
+				deltaY = abs(Point2.y - Point1.y);
+				deltaNx = abs(NBufer[Point2.x][Point2.y].x - NBufer[Point1.x][Point1.y].y);
+				deltaNy = abs(NBufer[Point2.x][Point2.y].y - NBufer[Point1.x][Point1.y].y);
+				deltaNz = abs(NBufer[Point2.x][Point2.y].z - NBufer[Point1.x][Point1.y].z);
+				signX = Point1.x < Point2.x ? 1 : -1;
+				signY = Point1.y < Point2.y ? 1 : -1;
+				signNx = NBufer[Point1.x][Point1.y].x < NBufer[Point2.x][Point2.y].x ? 1 : -1;
+				signNy = NBufer[Point1.x][Point1.y].y < NBufer[Point2.x][Point2.y].y ? 1 : -1;
+				signNz = NBufer[Point1.x][Point1.y].z < NBufer[Point2.x][Point2.y].z ? 1 : -1;
+				kolN = deltaX > deltaY ? deltaX : deltaY;
+				lyambdax = 0, lyambday = 0, lyambdaz = 0;
+				tmpN = NBufer[Point1.x][Point1.y];
+				if (deltaX > deltaY)
+				{
+					int error = 2 * deltaY - deltaX;
+					while (Point1.x != Point2.x)
+					{
+						if (error < 0) error += 2 * deltaY;
+						else error += 2 * deltaY - 2 * deltaX, Point1.y += signY;
+						Point1.x += signX;
+						lyambdax += (double)(deltaNx / kolN);
+						lyambday += (double)(deltaNy / kolN);
+						lyambdaz += (double)(deltaNz / kolN);
+						N.x = tmpN.x + signNx*lyambdax;
+						N.y = tmpN.y + signNy*lyambday;
+						N.z = tmpN.z + signNz*lyambdaz;
+						if (SkalPr(NBufer[Point1.x][Point1.y], L) < SkalPr(N, L)) NBufer[Point1.x][Point1.y].x = N.x, NBufer[Point1.x][Point1.y].y = N.y, NBufer[Point1.x][Point1.y].z = N.z;
+					}
+				}
+				else
+				{
+					int error = 2 * deltaX - deltaY;
+					while (Point1.y != Point2.y)
+					{
+						if (error < 0) error += 2 * deltaX;
+						else error += 2 * deltaX - 2 * deltaY, Point1.x += signX;
+						Point1.y += signY;
+						lyambdax += (double)(deltaNx / kolN);
+						lyambday += (double)(deltaNy / kolN);
+						lyambdaz += (double)(deltaNz / kolN);
+						N.x = tmpN.x + signNx*lyambdax;
+						N.y = tmpN.y + signNy*lyambday;
+						N.z = tmpN.z + signNz*lyambdaz;
+						if (SkalPr(NBufer[Point1.x][Point1.y], L) < SkalPr(N, L)) NBufer[Point1.x][Point1.y].x = N.x, NBufer[Point1.x][Point1.y].y = N.y, NBufer[Point1.x][Point1.y].z = N.z;
+					}
+				}
+			}//if (!fulllist.empty())
+		}//while (!fulllist.empty())*/
+		 //cout << "wait: " << i << "/" << l << endl;
+	}//for (int i = 0; i < l; i++)
+
+
+	int I = 0;
+
+	for (int i = 0; i < 3000; i++)
+		for (int j = 0; j < 3000; j++)
+			if (SkalPr(NBufer[i][j], L) > 0)
+			{
+				I = 255 * SkalPr(NBufer[i][j], L);
+				TGAColor Col = TGAColor(I, I, I, I);
+				image.set(i, j, Col);
+			}
+
+	image.flip_vertically();
+	image.write_tga_file("output.tga");
+
+	for (int i = 0; i < v; i++)
+		delete[] arrv[i];
+	delete[] arrv;
+	for (int i = 0; i < f; i++)
+		delete[] arrf[i];
+	delete[] arrf;
+
+	system("pause");
+	return 0;
+}
