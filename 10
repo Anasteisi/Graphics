@@ -8,214 +8,103 @@
 
 using namespace std;
 
-const TGAColor black = TGAColor(0, 0, 0, 0);
-const TGAColor white = TGAColor(255, 255, 255, 255);
-const TGAColor red = TGAColor(255, 0, 0, 255);
-
-void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color) //Alg_Brez modif+
+/*
+void line(int x1, int y1, int x2, int y2, TGAImage &image, TGAColor color)
 {
-	int deltaX = abs(x2 - x1);
-	int deltaY = abs(y2 - y1);
-	int signX = x1 < x2 ? 1 : -1;
-	int signY = y1 < y2 ? 1 : -1;
-	int error = deltaX - deltaY;
-	image.set(x2, y2, color);
-	while (x1 != x2 || y1 != y2)
-	{
-		image.set(x1, y1, color);
-		if (error * 2 > -deltaY)
-		{
-			error -= deltaY;
-			x1 += signX;
-			continue;
-		}
-		if (error * 2 < deltaX)
-		{
-			error += deltaX;
-			y1 += signY;
-			continue;
-		}
-	}
+int deltaX = abs(x2 - x1);
+int deltaY = abs(y2 - y1);
+int signX = x1 < x2 ? 1 : -1;
+int signY = y1 < y2 ? 1 : -1;
+image.set(x2, y2, color);
+if (deltaX > deltaY)
+{
+int error = 2 * deltaY - deltaX;
+while (x1 != x2)
+{
+image.set(x1, y1, color);
+if (error < 0) error += 2 * deltaY;
+else error += 2 * deltaY - 2 * deltaX, y1 += signY;
+x1 += signX;
 }
+}
+else
+{
+int error = 2 * deltaX - deltaY;
+while (y1 != y2)
+{
+image.set(x1, y1, color);
+if (error < 0) error += 2 * deltaX;
+else error += 2 * deltaX - 2 * deltaY, x1 += signX;
+y1 += signY;
+}
+}
+}*/
 
 struct Pixel
 {
-	int x = 0, y = 0;
+	int x, y, z;
 };
 
-struct otrezok
+struct Rebro
 {
-	int x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+	int x1, y1, z1, x2, y2, z2;
 };
 
-otrezok rebro(int x1, int y1, int x2, int y2)
-{
-	otrezok o;
-	o.x1 = x1;
-	o.x2 = x2;
-	o.y1 = y1;
-	o.y2 = y2;
-	return o;
-}
-
-
-void zalivka_postrochno(otrezok R1, otrezok R2, otrezok R3, TGAImage &image, TGAColor color)
-{
-	vector <Pixel> list1;
-	Pixel Z;
-	if (R1.y2 != R1.y1 && R1.x2 != R1.x1)
-	{
-		int signX = R1.x1 < R1.x2 ? 1 : -1;
-		int signY = R1.y1 < R1.y2 ? 1 : -1;
-		double x = R1.x1, y = R1.y1, delta = (double)abs(R1.x2 - R1.x1) / (double)abs(R1.y2 - R1.y1);
-		while (y != R1.y2)
-		{
-			Z.x = (int)x, Z.y = (int)y;
-			list1.push_back(Z);
-			x += signX*delta, y += signY;
-		}
-	}
-	else
-	{
-		Z.x = R1.x1, Z.y = R1.y1;
-		list1.push_back(Z);
-		Z.x = R1.x2, Z.y = R1.y2;
-		list1.push_back(Z);
-	}
-
-	vector <Pixel> list2;
-	if (R2.y2 != R2.y1 && R2.x2 != R2.x1)
-	{
-		int signX = R2.x1 < R2.x2 ? 1 : -1;
-		int signY = R2.y1 < R2.y2 ? 1 : -1;
-		double x = R2.x1, y = R2.y1, delta = (double)abs(R2.x2 - R2.x1) / (double)abs(R2.y2 - R2.y1);
-		while (y != R2.y2)
-		{
-			Z.x = (int)x, Z.y = (int)y;
-			list2.push_back(Z);
-			x += signX*delta, y += signY;
-		}
-	}
-	else
-	{
-		Z.x = R2.x1, Z.y = R2.y1;
-		list2.push_back(Z);
-		Z.x = R2.x2, Z.y = R2.y2;
-		list2.push_back(Z);
-	}
-
-	vector <Pixel> list3;
-	if (R3.y2 != R3.y1 && R3.x2 != R3.x1)
-	{
-		int signX = R3.x1 < R3.x2 ? 1 : -1;
-		int signY = R3.y1 < R3.y2 ? 1 : -1;
-		double x = R3.x1, y = R3.y1, delta = (double)abs(R3.x2 - R3.x1) / (double)abs(R3.y2 - R3.y1);
-		while (y != R3.y2)
-		{
-			Z.x = (int)x, Z.y = (int)y;
-			list3.push_back(Z);
-			x += signX*delta, y += signY;
-		}
-	}
-	else
-	{
-		Z.x = R3.x1, Z.y = R3.y1;
-		list3.push_back(Z);
-		Z.x = R3.x2, Z.y = R3.y2;
-		list3.push_back(Z);
-	}
-
-	vector<Pixel> fulllist;
-	fulllist.insert(fulllist.end(), list1.begin(), list1.end());
-	fulllist.insert(fulllist.end(), list2.begin(), list2.end());
-	fulllist.insert(fulllist.end(), list3.begin(), list3.end());
-
-	for (int i = 1; i < fulllist.size(); i++)
-		for (int j = 0; j < fulllist.size() - i; j++)
-			if (fulllist[j].y > fulllist[j + 1].y)
-				swap(fulllist[j], fulllist[j + 1]);
-
-	for (int i = 1; i < fulllist.size(); i++)
-		for (int j = 0; j < fulllist.size() - i; j++)
-			if (fulllist[j].y == fulllist[j + 1].y && fulllist[j].x > fulllist[j + 1].x)
-				swap(fulllist[j], fulllist[j + 1]);
-
-	Pixel Point1, Point2;
-	while (!fulllist.empty())
-	{
-		Point1 = fulllist.back();
-		fulllist.pop_back();
-		if (!fulllist.empty())
-		{
-			Point2 = fulllist.back(), fulllist.pop_back();
-			line(Point1.x, Point1.y, Point2.x, Point2.y, image, color);
-		}
-		else
-			image.set(Point1.x, Point1.y, color);
-	}
-}
-
-struct fstring
-{
-	int a, b, c;
-};
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
 
 int main()
 {
 	TGAImage image(3000, 3000, TGAImage::RGB);
-	double r = 0;
 	ifstream in;
 	char str[255];
 	char *p, *context1, *context2, *v1, *v2, *v3, *f1, *f2, *f3;
-	double a1 = 0, a2 = 0, a3 = 0;
-	int b1 = 0, b2 = 0, b3 = 0;
+	double a1 = 0, a2 = 0, a3 = 0, b1 = 0, b2 = 0, b3 = 0;
 	in.open("african_head.obj");
-	int k = 0;
+	int k = 0;//kolichestvo v (tochek)
 	while (!(in.eof()))
 	{
 		in.getline(str, 255);
-		if (str[0] == 'v') k++;
+		if (str[0] == 'v' && str[1] == ' ') k++;
 	}
 	in.close();
-	int** arrk = new int*[k];
+	double** arrk = new double*[k];
 	for (int i = 0; i < k; i++)
-		arrk[i] = new int[4];
+		arrk[i] = new double[4];
 	for (int i = 0; i < k; i++)
 		for (int j = 0; j < 4; j++)
 			arrk[i][j] = 0;
 	in.open("african_head.obj");
-	int l = 0;
+	int l = 0;//kolichestvo f (treugol'nikov)
 	while (!(in.eof()))
 	{
 		in.getline(str, 255);
 		if (str[0] == 'f') l++;
 	}
 	in.close();
-	fstring ** arrl = new fstring*[l];
+	int** arrl = new int*[l];
 	for (int i = 0; i < l; i++)
-		arrl[i] = new fstring[3];
+		arrl[i] = new int[3];
 	for (int i = 0; i < l; i++)
 		for (int j = 0; j < 3; j++)
-			arrl[i][j].a = 0, arrl[i][j].b = 0, arrl[i][j].c = 0;
+			arrl[i][j] = 0;
 	in.open("african_head.obj");
-
 	int i = 0;
 	while (!(in.eof()))
 	{
 		in.getline(str, 255);
-		if (str[0] == 'v')
+		if (str[0] == 'v' && str[1] == ' ')
 		{
 			p = strtok_s(str, " ", &context1);
 			v1 = strtok_s(NULL, " ", &context1);
 			v2 = strtok_s(NULL, " ", &context1);
 			v3 = strtok_s(NULL, " ", &context1);
 			a1 = atof(v1), a2 = atof(v2), a3 = atof(v3);
-			arrk[i][0] = int(a1 / (r * a3 + 1) * 1500), arrk[i][1] = int(a2 / (r * a3 + 1) * 1500), arrk[i][2] = int(a3 / (r * a3 + 1) * 1500);
+			arrk[i][0] = a1, arrk[i][1] = a2, arrk[i][2] = a3;
 			arrk[i][3] = 1;
 			i++;
 		}
 	}
-
 	in.close();
 	in.open("african_head.obj");
 	int j = 0;
@@ -228,56 +117,262 @@ int main()
 			f1 = strtok_s(NULL, " ", &context1);
 			f2 = strtok_s(NULL, " ", &context1);
 			f3 = strtok_s(NULL, " ", &context1);
-
-			b1 = atoi(strtok_s(f1, "/", &context2));
-			arrl[j][0].a = b1;
-			b1 = atoi(strtok_s(NULL, "/", &context2));
-			arrl[j][0].b = b1;
-			b1 = atoi(strtok_s(NULL, "/", &context2));
-			arrl[j][0].c = b1;
-
-			b2 = atoi(strtok_s(f2, "/", &context2));
-			arrl[j][1].a = b2;
-			b1 = atoi(strtok_s(NULL, "/", &context2));
-			arrl[j][1].b = b2;
-			b1 = atoi(strtok_s(NULL, "/", &context2));
-			arrl[j][1].c = b2;
-
-			b3 = atoi(strtok_s(f3, "/", &context2));
-			arrl[j][2].a = b3;
-			b1 = atoi(strtok_s(NULL, "/", &context2));
-			arrl[j][2].b = b3;
-			b1 = atoi(strtok_s(NULL, "/", &context2));
-			arrl[j][2].c = b3;
+			b1 = atoi(strtok_s(f1, "/", &context2)), b2 = atoi(strtok_s(f2, "/", &context2)), b3 = atoi(strtok_s(f3, "/", &context2));
+			arrl[j][0] = b1, arrl[j][1] = b2, arrl[j][2] = b3;
 			j++;
 		}
 	}
 	in.close();
 
+	double **ZBufer = new double *[3000];
+	for (int i = 0; i < 3000; ++i)
+		ZBufer[i] = new double[3000];
+
+	for (int i = 0; i < 3000; i++)
+		for (j = 0; j < 3000; j++)
+			ZBufer[i][j] = -30000;
+
+	for (int i = 0; i < k; i++)
+	{
+		int xpoz = 1500 + (int)(1500 * arrk[i][0]);
+		int ypoz = 1500 + (int)(1500 * arrk[i][1]);
+		int zpoz = 1500 + (int)(1500 * arrk[i][2]);
+		if (ZBufer[xpoz][ypoz] < zpoz) ZBufer[xpoz][ypoz] = zpoz;
+	}
+
 	for (int i = 0; i < l; i++)
 	{
-		int p1 = arrl[i][0].a - 1, p2 = arrl[i][1].a - 1, p3 = arrl[i][2].a - 1;
-		int xA = arrk[p1][0] + 1500, yA = arrk[p1][1] + 1500, zA = arrk[p1][2];
-		int xB = arrk[p2][0] + 1500, yB = arrk[p2][1] + 1500, zB = arrk[p2][2];
-		int xC = arrk[p3][0] + 1500, yC = arrk[p3][1] + 1500, zC = arrk[p3][2];
-		int zN = ((xB - xA - 3000)*(yC - yB - 3000) - (xC - xB - 3000)*(yB - yA - 3000)) * 1500 / sqrt (pow(((yB - yA - 3000)*(zC - zB - 3000) - (yC - yB - 3000)*(zB - zA - 3000)), 2) + pow((- (xB - xA - 3000)*(zC - zB - 3000) + (xC - xB - 3000)*(zB - zA - 3000)), 2) + pow(((xB - xA - 3000)*(yC - yB - 3000) - (xC - xB - 3000)*(yB - yA - 3000)), 2));
-		int k = (double)(zN * 255 / 1500) + 100;
-		if (k < 0) k = 0;
-		if (k > 255) k = 255;
-		cout << k << " ";
+		int p1 = arrl[i][0] - 1, p2 = arrl[i][1] - 1, p3 = arrl[i][2] - 1;
+		int xA = 1500 + (int)(1500 * arrk[p1][0]), yA = 1500 + (int)(1500 * arrk[p1][1]), zA = 1500 + (int)(1500 * arrk[p1][2]);
+		int xB = 1500 + (int)(1500 * arrk[p2][0]), yB = 1500 + (int)(1500 * arrk[p2][1]), zB = 1500 + (int)(1500 * arrk[p2][2]);
+		int xC = 1500 + (int)(1500 * arrk[p3][0]), yC = 1500 + (int)(1500 * arrk[p3][1]), zC = 1500 + (int)(1500 * arrk[p3][2]);
 
-		otrezok R1, R2, R3;
-		R1 = rebro(xA, yA, xB, yB);
-		R2 = rebro(xB, yB, xC, yC);
-		R3 = rebro(xC, yC, xA, yA);
+		Rebro R1, R2, R3;
+		R1.x1 = xA, R1.x2 = xB, R1.y1 = yA, R1.y2 = yB, R1.z1 = zA, R1.z2 = zB;
+		R2.x1 = xB, R2.x2 = xC, R2.y1 = yB, R2.y2 = yC, R2.z1 = zB, R2.z2 = zC;
+		R3.x1 = xC, R3.x2 = xA, R3.y1 = yC, R3.y2 = yA, R3.z1 = zC, R3.z2 = zA;
 
-		line(R1.x1, R1.y1, R1.x2, R1.y2, image, white);
-		line(R2.x1, R2.y1, R2.x2, R2.y2, image, white);
-		line(R3.x1, R3.y1, R3.x2, R3.y2, image, white);
+		vector <Pixel> list1, list2, list3;
+		Pixel Z;
+		Z.z = 0;
 
-		zalivka_postrochno(R1, R2, R3, image, TGAColor(k, k, k, 255));
-		cout << "wait..." << i << "/"<< l << endl;
-	}
+		int deltaX = abs(R1.x2 - R1.x1);
+		int deltaY = abs(R1.y2 - R1.y1);
+		int deltaZ = abs(R1.z2 - R1.z1);
+		int signX = R1.x1 < R1.x2 ? 1 : -1;
+		int signY = R1.y1 < R1.y2 ? 1 : -1;
+		int signZ = R1.z1 < R1.z2 ? 1 : -1;
+		if (ZBufer[R1.x1][R1.y1] < R1.z1) ZBufer[R1.x1][R1.y1] = R1.z1;
+		if (ZBufer[R1.x2][R1.y2] < R1.z2) ZBufer[R1.x2][R1.y2] = R1.z2;
+		Z.x = R1.x1, Z.y = R1.y1, Z.z = R1.z1;
+		list1.push_back(Z);
+		int kolZ = deltaX > deltaY ? deltaX : deltaY;
+		double lyambda = 0;
+		if (deltaX > deltaY)
+		{
+			int error = 2 * deltaY - deltaX;
+			while (R1.x1 != R1.x2)
+			{
+				if (error < 0) error += 2 * deltaY;
+				else error += 2 * deltaY - 2 * deltaX, R1.y1 += signY;
+				R1.x1 += signX;
+				lyambda += (double)(deltaZ / kolZ);
+				R1.z1 = zA + signZ * round(lyambda);
+				if (ZBufer[R1.x1][R1.y1] < R1.z1) ZBufer[R1.x1][R1.y1] = R1.z1;
+				Z.x = R1.x1, Z.y = R1.y1, Z.z = R1.z1;
+				list1.push_back(Z);
+			}
+		}
+		else
+		{
+			int error = 2 * deltaX - deltaY;
+			while (R1.y1 != R1.y2)
+			{
+				if (error < 0) error += 2 * deltaX;
+				else error += 2 * deltaX - 2 * deltaY, R1.x1 += signX;
+				R1.y1 += signY;
+				lyambda += (double)(deltaZ / kolZ);
+				R1.z1 = zA + signZ * round(lyambda);
+				if (ZBufer[R1.x1][R1.y1] < R1.z1) ZBufer[R1.x1][R1.y1] = R1.z1;
+				Z.x = R1.x1, Z.y = R1.y1, Z.z = R1.z1;
+				list1.push_back(Z);
+			}
+		}
+
+		deltaX = abs(R2.x2 - R2.x1);
+		deltaY = abs(R2.y2 - R2.y1);
+		deltaZ = abs(R2.z2 - R2.z1);
+		signX = R2.x1 < R2.x2 ? 1 : -1;
+		signY = R2.y1 < R2.y2 ? 1 : -1;
+		signZ = R2.z1 < R2.z2 ? 1 : -1;
+		if (ZBufer[R2.x1][R2.y1] < R2.z1) ZBufer[R2.x1][R2.y1] = R2.z1;
+		if (ZBufer[R2.x2][R2.y2] < R2.z2) ZBufer[R2.x2][R2.y2] = R2.z2;
+		Z.x = R2.x1, Z.y = R2.y1, Z.z = R2.z1;
+		list2.push_back(Z);
+		kolZ = deltaX > deltaY ? deltaX : deltaY;
+		lyambda = 0;
+		if (deltaX > deltaY)
+		{
+			int error = 2 * deltaY - deltaX;
+			while (R2.x1 != R2.x2)
+			{
+				if (error < 0) error += 2 * deltaY;
+				else error += 2 * deltaY - 2 * deltaX, R2.y1 += signY;
+				R2.x1 += signX;
+				lyambda += (double)(deltaZ / kolZ);
+				R2.z1 = zB + signZ * round(lyambda);
+				if (ZBufer[R2.x1][R2.y1] < R2.z1) ZBufer[R2.x1][R2.y1] = R2.z1;
+				Z.x = R2.x1, Z.y = R2.y1, Z.z = R2.z1;
+				list2.push_back(Z);
+			}
+		}
+		else
+		{
+			int error = 2 * deltaX - deltaY;
+			while (R2.y1 != R2.y2)
+			{
+				if (error < 0) error += 2 * deltaX;
+				else error += 2 * deltaX - 2 * deltaY, R2.x1 += signX;
+				R2.y1 += signY;
+				lyambda += (double)(deltaZ / kolZ);
+				R2.z1 = zB + signZ * round(lyambda);
+				if (ZBufer[R2.x1][R2.y1] < R2.z1) ZBufer[R2.x1][R2.y1] = R2.z1;
+				Z.x = R2.x1, Z.y = R2.y1, Z.z = R2.z1;
+				list2.push_back(Z);
+			}
+		}
+
+		deltaX = abs(R3.x2 - R3.x1);
+		deltaY = abs(R3.y2 - R3.y1);
+		deltaZ = abs(R3.z2 - R3.z1);
+		signX = R3.x1 < R3.x2 ? 1 : -1;
+		signY = R3.y1 < R3.y2 ? 1 : -1;
+		signZ = R3.z1 < R3.z2 ? 1 : -1;
+		if (ZBufer[R3.x1][R3.y1] < R3.z1) ZBufer[R3.x1][R3.y1] = R3.z1;
+		if (ZBufer[R3.x2][R3.y2] < R3.z2) ZBufer[R3.x2][R3.y2] = R3.z2;
+		Z.x = R3.x1, Z.y = R3.y1, Z.z = R3.z1;
+		list3.push_back(Z);
+		kolZ = deltaX > deltaY ? deltaX : deltaY;
+		lyambda = 0;
+		if (deltaX > deltaY)
+		{
+			int error = 2 * deltaY - deltaX;
+			while (R3.x1 != R3.x2)
+			{
+				if (error < 0) error += 2 * deltaY;
+				else error += 2 * deltaY - 2 * deltaX, R3.y1 += signY;
+				R3.x1 += signX;
+				lyambda += (double)(deltaZ / kolZ);
+				R2.z1 = zC + signZ * round(lyambda);
+				if (ZBufer[R3.x1][R3.y1] < R3.z1) ZBufer[R3.x1][R3.y1] = R3.z1;
+				Z.x = R3.x1, Z.y = R3.y1, Z.z = R3.z1;
+				list3.push_back(Z);
+			}
+		}
+		else
+		{
+			int error = 2 * deltaX - deltaY;
+			while (R3.y1 != R3.y2)
+			{
+				if (error < 0) error += 2 * deltaX;
+				else error += 2 * deltaX - 2 * deltaY, R3.x1 += signX;
+				R3.y1 += signY;
+				lyambda += (double)(deltaZ / kolZ);
+				R2.z1 = zC + signZ * round(lyambda);
+				if (ZBufer[R3.x1][R3.y1] < R3.z1) ZBufer[R3.x1][R3.y1] = R3.z1;
+				Z.x = R3.x1, Z.y = R3.y1, Z.z = R3.z1;
+				list3.push_back(Z);
+			}
+		}
+		
+		vector<Pixel> fulllist;
+		fulllist.insert(fulllist.end(), list1.begin(), list1.end());
+		fulllist.insert(fulllist.end(), list2.begin(), list2.end());
+		fulllist.insert(fulllist.end(), list3.begin(), list3.end());
+
+		for (int i = 1; i < fulllist.size(); i++)
+			for (int j = 0; j < fulllist.size() - i; j++)
+				if (fulllist[j].y > fulllist[j + 1].y)
+					swap(fulllist[j], fulllist[j + 1]);
+
+		for (int i = 1; i < fulllist.size(); i++)
+			for (int j = 0; j < fulllist.size() - i; j++)
+				if (fulllist[j].y == fulllist[j + 1].y && fulllist[j].x > fulllist[j + 1].x)
+					swap(fulllist[j], fulllist[j + 1]);
+
+		Pixel Point1, Point2;
+		while (!fulllist.empty())
+		{
+			Point1 = fulllist.back();
+			fulllist.pop_back();
+			if (!fulllist.empty())
+			{
+				Point2 = fulllist.back(), fulllist.pop_back();
+
+				deltaX = abs(Point2.x - Point1.x);
+				deltaY = abs(Point2.y - Point1.y);
+				deltaZ = abs(Point2.z - Point1.z);
+				signX = Point2.x > Point1.x ? 1 : -1;
+				signY = Point2.y > Point1.y ? 1 : -1;
+				signZ = Point2.z > Point1.z ? 1 : -1;
+				kolZ = deltaX > deltaY ? deltaX : deltaY;
+				lyambda = 0;
+
+				if (deltaX == 0 && deltaY == 0)
+				{
+					if (Point1.z < Point2.z) ZBufer[Point1.x][Point1.y] = Point2.z;
+					else ZBufer[Point1.x][Point1.y] = Point1.z;
+					
+				}
+				else
+				{
+					int tmpZ = Point1.z;
+					if (deltaX > deltaY)
+					{
+						int error = 2 * deltaY - deltaX;
+						while (Point1.x != Point2.x)
+						{
+							if (error < 0) error += 2 * deltaY;
+							else error += 2 * deltaY - 2 * deltaX, Point1.y += signY;
+							Point1.x += signX;
+							if (kolZ != 0) lyambda += (double)(deltaZ / kolZ);
+							Point1.z = tmpZ + signZ * round(lyambda);
+							if (ZBufer[Point1.x][Point1.y] < Point1.z) ZBufer[Point1.x][Point1.y] = Point1.z;
+						}
+					}
+					else
+					{
+						int error = 2 * deltaX - deltaY;
+						while (Point1.y != Point2.y)
+						{
+							if (error < 0) error += 2 * deltaX;
+							else error += 2 * deltaX - 2 * deltaY, Point1.x += signX;
+							Point1.y += signY;
+							if (kolZ != 0) lyambda += (double)(deltaZ / kolZ);
+							Point1.z = tmpZ + signZ * round(lyambda);
+							if (ZBufer[Point1.x][Point1.y] < Point1.z) ZBufer[Point1.x][Point1.y] = Point1.z;
+						}
+					}
+				}
+			}//if (!fulllist.empty())
+			else
+				if (ZBufer[Point1.x][Point1.y] < Point1.z) ZBufer[Point1.x][Point1.y] = Point1.z;
+		}//while (!fulllist.empty())
+		 //cout << "wait: " << i << "/" << l << endl;*/
+	}//for (int i = 0; i < l; i++)
+	
+
+	int I = 0;
+
+	for (int i = 0; i < 3000; i++)
+		for (int j = 0; j < 3000; j++)
+			if (ZBufer[i][j] != -30000)
+			{
+				//cout << ZBufer[i][j] << endl;
+				I = round(ZBufer[i][j] * 255 / 3000);
+				TGAColor Col = TGAColor(I, I, I, I);
+				image.set(i, j, Col);
+			}
 
 	image.flip_vertically();
 	image.write_tga_file("output.tga");
@@ -289,6 +384,6 @@ int main()
 		delete[] arrl[i];
 	delete[] arrl;
 
-	//system("pause");
+	system("pause");
 	return 0;
 }
