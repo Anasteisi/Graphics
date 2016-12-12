@@ -1,0 +1,647 @@
+#include <iostream>
+#include <cmath>
+#include <stack>
+#include <vector>
+#include <cstring>
+#include <fstream>
+#include "tgaimage.h"
+
+using namespace std;
+
+struct Pixel
+{
+	double x, y;
+};
+
+struct Textures
+{
+	double xt, yt;
+};
+
+struct SootvNT
+{
+	double x, y, xt, yt;
+};
+
+struct Rebro
+{
+	int x1, y1, x2, y2;
+};
+
+struct Face
+{
+	int f1, f2, f3;
+};
+
+struct Colour
+{
+	int r, g, b, a;
+};
+
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
+
+int main()
+{
+	TGAImage image(3000, 3000, TGAImage::RGB);
+	ifstream in;
+
+	char str[255];
+	char *p, *context1, *context2, *v1, *v2, *v3, *f1, *f2, *f3, *vn1, *vn2, *vn3, *vt1, *vt2, *vt3;
+	double a1 = 0, a2 = 0, a3 = 0, c1 = 0, c2 = 0, c3 = 0, d1 = 0, d2 = 0, d3 = 0;
+	int b1 = 0, b2 = 0, b3 = 0;
+	in.open("african_head.obj");
+	TGAImage diffuse;
+	diffuse.read_tga_file("african_head_diffuse.tga");
+	int v = 0;//kolichestvo v (tochek)
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'v' && str[1] == ' ') v++;
+	}
+	in.close();
+	Pixel* arrv = new Pixel[v];
+	for (int i = 0; i < v; i++)
+		arrv[i].x = 0, arrv[i].y = 0;
+
+	in.open("african_head.obj");
+	int f = 0;//kolichestvo f (treugol'nikov)
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'f') f++;
+	}
+	in.close();
+	Face** arrf = new Face*[f];
+	for (int i = 0; i < f; i++)
+		arrf[i] = new Face[3];
+	for (int i = 0; i < f; i++)
+		for (int j = 0; j < 3; j++)
+			arrf[i][j].f1 = 0, arrf[i][j].f2 = 0, arrf[i][j].f3 = 0;
+
+	in.open("african_head.obj");
+	int vt = 0;//kolichestvo vt (textur)
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'v' && str[1] == 't') vt++;
+	}
+	in.close();
+	Pixel* arrvt = new Pixel[vt];
+	for (int i = 0; i < vt; i++)
+		arrvt[i].x = 0, arrvt[i].y = 0;
+
+	in.open("african_head.obj");
+	int i = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'v' && str[1] == ' ')
+		{
+			p = strtok_s(str, " ", &context1);
+			v1 = strtok_s(NULL, " ", &context1);
+			v2 = strtok_s(NULL, " ", &context1);
+			v3 = strtok_s(NULL, " ", &context1);
+			a1 = atof(v1), a2 = atof(v2), a3 = atof(v3);
+			arrv[i].x = a1, arrv[i].y = a2;
+			i++;
+		}
+	}
+	in.close();
+
+	in.open("african_head.obj");
+	i = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'f')
+		{
+			p = strtok_s(str, " ", &context1);
+			f1 = strtok_s(NULL, " ", &context1);
+			f2 = strtok_s(NULL, " ", &context1);
+			f3 = strtok_s(NULL, " ", &context1);
+			b1 = atoi(strtok_s(f1, "/", &context2)), b2 = atoi(strtok_s(NULL, "/", &context2)), b3 = atoi(strtok_s(NULL, "/", &context2));
+			arrf[i][0].f1 = b1, arrf[i][0].f2 = b2, arrf[i][0].f3 = b3;
+			b1 = atoi(strtok_s(f2, "/", &context2)), b2 = atoi(strtok_s(NULL, "/", &context2)), b3 = atoi(strtok_s(NULL, "/", &context2));
+			arrf[i][1].f1 = b1, arrf[i][1].f2 = b2, arrf[i][1].f3 = b3;
+			b1 = atoi(strtok_s(f3, "/", &context2)), b2 = atoi(strtok_s(NULL, "/", &context2)), b3 = atoi(strtok_s(NULL, "/", &context2));
+			arrf[i][2].f1 = b1, arrf[i][2].f2 = b2, arrf[i][2].f3 = b3;
+			i++;
+		}
+	}
+	in.close();
+
+	in.open("african_head.obj");
+	i = 0;
+	while (!(in.eof()))
+	{
+		in.getline(str, 255);
+		if (str[0] == 'v' && str[1] == 't')
+		{
+			p = strtok_s(str, " ", &context1);
+			vt1 = strtok_s(NULL, " ", &context1);
+			vt2 = strtok_s(NULL, " ", &context1);
+			vt3 = strtok_s(NULL, " ", &context1);
+			d1 = atof(vt1), d2 = atof(vt2), d3 = atof(vt3);
+			arrvt[i].x = d1, arrvt[i].y = d2;
+			i++;
+		}
+	}
+	in.close();
+
+	for (int i = 0; i < f; i++)
+	{
+		int p1 = arrf[i][0].f1 - 1, p2 = arrf[i][1].f1 - 1, p3 = arrf[i][2].f1 - 1;
+		int pt1 = arrf[i][0].f2 - 1, pt2 = arrf[i][1].f2 - 1, pt3 = arrf[i][2].f2 - 1;
+		int xA = 1500 + round(1500 * arrv[p1].x), yA = 1500 + round(1500 * arrv[p1].y);
+		int xB = 1500 + round(1500 * arrv[p2].x), yB = 1500 + round(1500 * arrv[p2].y);
+		int xC = 1500 + round(1500 * arrv[p3].x), yC = 1500 + round(1500 * arrv[p3].y);
+		int xtA = round(1024 * arrvt[pt1].x), ytA = round(1024 * arrvt[pt1].y);
+		int xtB = round(1024 * arrvt[pt2].x), ytB = round(1024 * arrvt[pt2].y);
+		int xtC = round(1024 * arrvt[pt3].x), ytC = round(1024 * arrvt[pt3].y);
+
+		Rebro R1, R2, R3;
+		R1.x1 = xA, R1.x2 = xB, R1.y1 = yA, R1.y2 = yB;
+		R2.x1 = xB, R2.x2 = xC, R2.y1 = yB, R2.y2 = yC;
+		R3.x1 = xC, R3.x2 = xA, R3.y1 = yC, R3.y2 = yA;
+
+		Rebro Rt1, Rt2, Rt3;
+		Rt1.x1 = xtA, Rt1.x2 = xtB, Rt1.y1 = ytA, Rt1.y2 = ytB;
+		Rt2.x1 = xtB, Rt2.x2 = xtC, Rt2.y1 = ytB, Rt2.y2 = ytC;
+		Rt3.x1 = xtC, Rt3.x2 = xtA, Rt3.y1 = ytC, Rt3.y2 = ytA;
+
+		vector <SootvNT> list1, list2, list3;
+		SootvNT Z;
+
+		int deltaX = abs(R1.x2 - R1.x1);
+		int deltaXt = abs(Rt1.x2 - Rt1.x1);
+		int deltaY = abs(R1.y2 - R1.y1);
+		int deltaYt = abs(Rt1.y2 - Rt1.y1);
+		int signX = R1.x1 < R1.x2 ? 1 : -1;
+		int signXt = Rt1.x1 < Rt1.x2 ? 1 : -1;
+		int signY = R1.y1 < R1.y2 ? 1 : -1;
+		int signYt = Rt1.y1 < Rt1.y2 ? 1 : -1;
+		Z.x = R1.x1, Z.y = R1.y1, Z.xt = Rt1.x1, Z.yt = Rt1.y1;
+		list1.push_back(Z);
+
+		if (deltaX == 0 && deltaY == 0)
+		{
+			Z.x = R1.x1, Z.y = R1.y1, Z.xt = Rt1.x1, Z.yt = Rt1.y1;
+			list1.push_back(Z);
+		}
+
+		if (deltaX > deltaY && deltaXt > deltaYt)
+		{
+			int error = 2 * deltaY - deltaX;
+			int errort = 2 * deltaYt - deltaXt;
+			double lyambda = 0, sigma = 0;
+			lyambda = (double)(deltaYt / deltaX);
+			sigma = (double)(deltaXt / deltaX);
+			double l = lyambda, s = sigma;
+			while (R1.x1 != R1.x2)
+			{
+				if (error < 0) error += 2 * deltaY;
+				else error += 2 * deltaY - 2 * deltaX, R1.y1 += signY;
+				if (errort < 0) errort += 2 * deltaYt;
+				else errort += 2 * deltaYt - 2 * deltaXt, Rt1.y1 += signYt * l, l += lyambda;
+				R1.x1 += signX;
+				Rt1.x1 += signXt * s, s += sigma;
+				Z.x = R1.x1, Z.y = R1.y1, Z.xt = Rt1.x1, Z.yt = Rt1.y1;
+				list1.push_back(Z);
+			}
+		}
+
+		if (deltaX <= deltaY && deltaY!=0 && deltaXt <= deltaYt)
+		{
+			int error = 2 * deltaX - deltaY;
+			int errort = 2 * deltaXt - deltaYt;
+			double lyambda = 0, sigma = 0;
+			lyambda = (double)(deltaYt / deltaY);
+			sigma = (double)(deltaXt / deltaY);
+			double l = lyambda, s = sigma;
+			while (R1.y1 != R1.y2)
+			{
+				if (error < 0) error += 2 * deltaX;
+				else error += 2 * deltaX - 2 * deltaY, R1.x1 += signX;
+				if (errort < 0) errort += 2 * deltaXt;
+				else errort += 2 * deltaXt - 2 * deltaYt, Rt1.x1 += signXt * s, s += sigma;
+				R1.y1 += signY;
+				Rt1.y1 += signYt * l, l += lyambda;
+				Z.x = R1.x1, Z.y = R1.y1, Z.xt = Rt1.x1, Z.yt = Rt1.y1;
+				list1.push_back(Z);
+			}
+		}
+
+		if (deltaX > deltaY && deltaXt <= deltaYt)
+		{
+			int error = 2 * deltaY - deltaX;
+			int errort = 2 * deltaXt - deltaYt;
+			double lyambda = 0, sigma = 0;
+			lyambda = (double)(deltaYt / deltaX);
+			sigma = (double)(deltaXt / deltaX);
+			double l = lyambda, s = sigma;
+			while (R1.x1 != R1.x2)
+			{
+				if (error < 0) error += 2 * deltaY;
+				else error += 2 * deltaY - 2 * deltaX, R1.y1 += signY;
+				if (errort < 0) errort += 2 * deltaXt;
+				else errort += 2 * deltaXt - 2 * deltaYt, Rt1.x1 += signXt * s, s += sigma;
+				R1.x1 += signX;
+				Rt1.y1 += signYt * l, l += lyambda;
+				Z.x = R1.x1, Z.y = R1.y1, Z.xt = Rt1.x1, Z.yt = Rt1.y1;
+				list1.push_back(Z);
+			}
+		}
+
+		if (deltaX <= deltaY && deltaY != 0 && deltaXt > deltaYt)
+		{
+			int error = 2 * deltaX - deltaY;
+			int errort = 2 * deltaYt - deltaXt;
+			double lyambda = 0, sigma = 0;
+			lyambda = (double)(deltaYt / deltaY);
+			sigma = (double)(deltaXt / deltaY);
+			double l = lyambda, s = sigma;
+			while (R1.y1 != R1.y2)
+			{
+				if (error < 0) error += 2 * deltaX;
+				else error += 2 * deltaX - 2 * deltaY, R1.x1 += signX;
+				if (errort < 0) errort += 2 * deltaYt;
+				else errort += 2 * deltaYt - 2 * deltaXt, Rt1.y1 += signYt * l, l += lyambda;
+				R1.y1 += signY;
+				Rt1.x1 += signXt * s, s += sigma;
+				Z.x = R1.x1, Z.y = R1.y1, Z.xt = Rt1.x1, Z.yt = Rt1.y1;
+				list1.push_back(Z);
+			}
+		}
+
+		deltaX = abs(R2.x2 - R2.x1);
+		deltaXt = abs(Rt2.x2 - Rt2.x1);
+		deltaY = abs(R2.y2 - R2.y1);
+		deltaYt = abs(Rt2.y2 - Rt2.y1);
+		signX = R2.x1 < R2.x2 ? 1 : -1;
+		signXt = Rt2.x1 < Rt2.x2 ? 1 : -1;
+		signY = R2.y1 < R2.y2 ? 1 : -1;
+		signYt = Rt2.y1 < Rt2.y2 ? 1 : -1;
+		Z.x = R2.x1, Z.y = R2.y1, Z.xt = Rt2.x1, Z.yt = Rt2.y1;
+		list2.push_back(Z);
+
+		if (deltaX == 0 && deltaY == 0)
+		{
+			Z.x = R2.x1, Z.y = R2.y1, Z.xt = Rt2.x1, Z.yt = Rt2.y1;
+			list2.push_back(Z);
+		}
+
+		if (deltaX > deltaY && deltaXt > deltaYt)
+		{
+			int error = 2 * deltaY - deltaX;
+			int errort = 2 * deltaYt - deltaXt;
+			double lyambda = 0, sigma = 0;
+			lyambda = (double)(deltaYt / deltaX);
+			sigma = (double)(deltaXt / deltaX);
+			double l = lyambda, s = sigma;
+			while (R2.x1 != R2.x2)
+			{
+				if (error < 0) error += 2 * deltaY;
+				else error += 2 * deltaY - 2 * deltaX, R2.y1 += signY;
+				if (errort < 0) errort += 2 * deltaYt;
+				else errort += 2 * deltaYt - 2 * deltaXt, Rt2.y1 += signYt * l, l += lyambda;
+				R2.x1 += signX;
+				Rt2.x1 += signXt * s, s += sigma;
+				Z.x = R2.x1, Z.y = R2.y1, Z.xt = Rt2.x1, Z.yt = Rt2.y1;
+				list2.push_back(Z);
+			}
+		}
+
+		if (deltaX <= deltaY && deltaY != 0 && deltaXt <= deltaYt)
+		{
+			int error = 2 * deltaX - deltaY;
+			int errort = 2 * deltaXt - deltaYt;
+			double lyambda = 0, sigma = 0;
+			lyambda = (double)(deltaYt / deltaY);
+			sigma = (double)(deltaXt / deltaY);
+			double l = lyambda, s = sigma;
+			while (R2.y1 != R2.y2)
+			{
+				if (error < 0) error += 2 * deltaX;
+				else error += 2 * deltaX - 2 * deltaY, R2.x1 += signX;
+				if (errort < 0) errort += 2 * deltaXt;
+				else errort += 2 * deltaXt - 2 * deltaYt, Rt2.x1 += signXt * s, s += sigma;
+				R2.y1 += signY;
+				Rt2.y1 += signYt * l, l += lyambda;
+				Z.x = R2.x1, Z.y = R2.y1, Z.xt = Rt2.x1, Z.yt = Rt2.y1;
+				list2.push_back(Z);
+			}
+		}
+
+		if (deltaX > deltaY && deltaXt <= deltaYt)
+		{
+			int error = 2 * deltaY - deltaX;
+			int errort = 2 * deltaXt - deltaYt;
+			double lyambda = 0, sigma = 0;
+			lyambda = (double)(deltaYt / deltaX);
+			sigma = (double)(deltaXt / deltaX);
+			double l = lyambda, s = sigma;
+			while (R2.x1 != R2.x2)
+			{
+				if (error < 0) error += 2 * deltaY;
+				else error += 2 * deltaY - 2 * deltaX, R2.y1 += signY;
+				if (errort < 0) errort += 2 * deltaXt;
+				else errort += 2 * deltaXt - 2 * deltaYt, Rt2.x1 += signXt * s, s += sigma;
+				R2.x1 += signX;
+				Rt2.y1 += signYt * l, l += lyambda;
+				Z.x = R2.x1, Z.y = R2.y1, Z.xt = Rt2.x1, Z.yt = Rt2.y1;
+				list2.push_back(Z);
+			}
+		}
+
+		if (deltaX <= deltaY && deltaY != 0 && deltaXt > deltaYt)
+		{
+			int error = 2 * deltaX - deltaY;
+			int errort = 2 * deltaYt - deltaXt;
+			double lyambda = 0, sigma = 0;
+			lyambda = (double)(deltaYt / deltaY);
+			sigma = (double)(deltaXt / deltaY);
+			double l = lyambda, s = sigma;
+			while (R2.y1 != R2.y2)
+			{
+				if (error < 0) error += 2 * deltaX;
+				else error += 2 * deltaX - 2 * deltaY, R2.x1 += signX;
+				if (errort < 0) errort += 2 * deltaYt;
+				else errort += 2 * deltaYt - 2 * deltaXt, Rt2.y1 += signYt * l, l += lyambda;
+				R2.y1 += signY;
+				Rt2.x1 += signXt * s, s += sigma;
+				Z.x = R2.x1, Z.y = R2.y1, Z.xt = Rt2.x1, Z.yt = Rt2.y1;
+				list2.push_back(Z);
+			}
+		}
+
+		deltaX = abs(R3.x2 - R3.x1);
+		deltaXt = abs(Rt3.x2 - Rt3.x1);
+		deltaY = abs(R3.y2 - R3.y1);
+		deltaYt = abs(Rt3.y2 - Rt3.y1);
+		signX = R3.x1 < R3.x2 ? 1 : -1;
+		signXt = Rt3.x1 < Rt3.x2 ? 1 : -1;
+		signY = R3.y1 < R3.y2 ? 1 : -1;
+		signYt = Rt3.y1 < Rt3.y2 ? 1 : -1;
+		Z.x = R3.x1, Z.y = R3.y1, Z.xt = Rt3.x1, Z.yt = Rt3.y1;
+		list3.push_back(Z);
+
+		if (deltaX == 0 && deltaY == 0)
+		{
+			Z.x = R3.x1, Z.y = R3.y1, Z.xt = Rt3.x1, Z.yt = Rt3.y1;
+			list3.push_back(Z);
+		}
+
+		if (deltaX > deltaY && deltaXt > deltaYt)
+		{
+			int error = 2 * deltaY - deltaX;
+			int errort = 2 * deltaYt - deltaXt;
+			double lyambda = 0, sigma = 0;
+			lyambda = (double)(deltaYt / deltaX);
+			sigma = (double)(deltaXt / deltaX);
+			double l = lyambda, s = sigma;
+			while (R3.x1 != R3.x2)
+			{
+				if (error < 0) error += 2 * deltaY;
+				else error += 2 * deltaY - 2 * deltaX, R3.y1 += signY;
+				if (errort < 0) errort += 2 * deltaYt;
+				else errort += 2 * deltaYt - 2 * deltaXt, Rt3.y1 += signYt * l, l += lyambda;
+				R3.x1 += signX;
+				Rt3.x1 += signXt * s, s += sigma;
+				Z.x = R3.x1, Z.y = R3.y1, Z.xt = Rt3.x1, Z.yt = Rt3.y1;
+				list3.push_back(Z);
+			}
+		}
+
+		if (deltaX <= deltaY && deltaY != 0 && deltaXt <= deltaYt)
+		{
+			int error = 2 * deltaX - deltaY;
+			int errort = 2 * deltaXt - deltaYt;
+			double lyambda = 0, sigma = 0;
+			lyambda = (double)(deltaYt / deltaY);
+			sigma = (double)(deltaXt / deltaY);
+			double l = lyambda, s = sigma;
+			while (R3.y1 != R3.y2)
+			{
+				if (error < 0) error += 2 * deltaX;
+				else error += 2 * deltaX - 2 * deltaY, R3.x1 += signX;
+				if (errort < 0) errort += 2 * deltaXt;
+				else errort += 2 * deltaXt - 2 * deltaYt, Rt3.x1 += signXt * s, s += sigma;
+				R3.y1 += signY;
+				Rt3.y1 += signYt * l, l += lyambda;
+				Z.x = R3.x1, Z.y = R3.y1, Z.xt = Rt3.x1, Z.yt = Rt3.y1;
+				list3.push_back(Z);
+			}
+		}
+
+		if (deltaX > deltaY && deltaXt <= deltaYt)
+		{
+			int error = 2 * deltaY - deltaX;
+			int errort = 2 * deltaXt - deltaYt;
+			double lyambda = 0, sigma = 0;
+			lyambda = (double)(deltaYt / deltaX);
+			sigma = (double)(deltaXt / deltaX);
+			double l = lyambda, s = sigma;
+			while (R3.x1 != R3.x2)
+			{
+				if (error < 0) error += 2 * deltaY;
+				else error += 2 * deltaY - 2 * deltaX, R3.y1 += signY;
+				if (errort < 0) errort += 2 * deltaXt;
+				else errort += 2 * deltaXt - 2 * deltaYt, Rt3.x1 += signXt * s, s += sigma;
+				R3.x1 += signX;
+				Rt3.y1 += signYt * l, l += lyambda;
+				Z.x = R3.x1, Z.y = R3.y1, Z.xt = Rt3.x1, Z.yt = Rt3.y1;
+				list3.push_back(Z);
+			}
+		}
+
+		if (deltaX <= deltaY && deltaY != 0 && deltaXt > deltaYt)
+		{
+			int error = 2 * deltaX - deltaY;
+			int errort = 2 * deltaYt - deltaXt;
+			double lyambda = 0, sigma = 0;
+			lyambda = (double)(deltaYt / deltaY);
+			sigma = (double)(deltaXt / deltaY);
+			double l = lyambda, s = sigma;
+			while (R3.y1 != R3.y2)
+			{
+				if (error < 0) error += 2 * deltaX;
+				else error += 2 * deltaX - 2 * deltaY, R3.x1 += signX;
+				if (errort < 0) errort += 2 * deltaYt;
+				else errort += 2 * deltaYt - 2 * deltaXt, Rt3.y1 += signYt * l, l += lyambda;
+				R3.y1 += signY;
+				Rt3.x1 += signXt * s, s += sigma;
+				Z.x = R3.x1, Z.y = R3.y1, Z.xt = Rt3.x1, Z.yt = Rt3.y1;
+				list3.push_back(Z);
+			}
+		}
+
+		vector<SootvNT> fulllist;
+		fulllist.insert(fulllist.end(), list1.begin(), list1.end());
+		fulllist.insert(fulllist.end(), list2.begin(), list2.end());
+		fulllist.insert(fulllist.end(), list3.begin(), list3.end());
+
+		for (int i = 1; i < fulllist.size(); i++)
+			for (int j = 0; j < fulllist.size() - i; j++)
+				if (fulllist[j].y > fulllist[j + 1].y)
+					swap(fulllist[j], fulllist[j + 1]);
+
+		for (int i = 1; i < fulllist.size(); i++)
+			for (int j = 0; j < fulllist.size() - i; j++)
+				if (fulllist[j].y == fulllist[j + 1].y && fulllist[j].x > fulllist[j + 1].x)
+					swap(fulllist[j], fulllist[j + 1]);
+
+		/*while (!fulllist.empty())
+		{
+			SootvNT Point1 = fulllist.back();
+			fulllist.pop_back();
+			int r = (int)(diffuse.get(Point1.xt, Point1.yt).r);
+			int g = (int)(diffuse.get(Point1.xt, Point1.yt).g);
+			int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
+			int a = (int)(diffuse.get(Point1.xt, Point1.yt).a);
+			image.set(Point1.x, Point1.y, TGAColor(r, g, b, a));
+		}*/
+
+		SootvNT Point1, Point2;
+		while (!fulllist.empty())
+		{
+			Point1 = fulllist.back();
+			fulllist.pop_back();
+
+			int r = (int)(diffuse.get(Point1.xt, Point1.yt).r);
+			int g = (int)(diffuse.get(Point1.xt, Point1.yt).g);
+			int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
+			int a = (int)(diffuse.get(Point1.xt, Point1.yt).a);
+			image.set(Point1.x, Point1.y, TGAColor(r, g, b, a));
+
+			if (!fulllist.empty())
+			{
+				Point2 = fulllist.back(), fulllist.pop_back();
+				deltaX = abs(Point2.x - Point1.x);
+				deltaXt = abs(Point2.xt - Point1.xt);
+				deltaY = abs(Point2.y - Point1.y);
+				deltaYt = abs(Point2.yt - Point1.yt);
+				signX = Point1.x < Point2.x ? 1 : -1;
+				signXt = Point1.xt < Point2.xt ? 1 : -1;
+				signY = Point1.y < Point2.y ? 1 : -1;
+				signYt = Point1.yt < Point2.yt ? 1 : -1;
+
+				if (deltaX == 0 && deltaY == 0)
+				{
+					int r = (int)(diffuse.get(Point1.xt, Point1.yt).r);
+					int g = (int)(diffuse.get(Point1.xt, Point1.yt).g);
+					int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
+					int a = (int)(diffuse.get(Point1.xt, Point1.yt).a);
+					image.set(Point1.x, Point1.y, TGAColor(r, g, b, a));
+					continue;
+				}
+
+				if (deltaX > deltaY && deltaXt > deltaYt)
+				{
+					int error = 2 * deltaY - deltaX;
+					int errort = 2 * deltaYt - deltaXt;
+					double lyambda = 0, sigma = 0;
+					lyambda = (double)(deltaYt / deltaX);
+					sigma = (double)(deltaXt / deltaX);
+					double l = lyambda, s = sigma;
+					while (Point1.x != Point2.x)
+					{
+						if (error < 0) error += 2 * deltaY;
+						else error += 2 * deltaY - 2 * deltaX, Point1.y += signY;
+						if (errort < 0) errort += 2 * deltaYt;
+						else errort += 2 * deltaYt - 2 * deltaXt, Point1.yt += signYt * l, l += lyambda;
+						Point1.x += signX;
+						Point1.xt += signXt * s, s += sigma;
+						int r = (int)(diffuse.get(Point1.xt, Point1.yt).r);
+						int g = (int)(diffuse.get(Point1.xt, Point1.yt).g);
+						int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
+						int a = (int)(diffuse.get(Point1.xt, Point1.yt).a);
+						image.set(Point1.x, Point1.y, TGAColor(r, g, b, a));
+					}
+				}
+
+				if (deltaX <= deltaY && deltaY != 0 && deltaXt <= deltaYt)
+				{
+					int error = 2 * deltaX - deltaY;
+					int errort = 2 * deltaXt - deltaYt;
+					double lyambda = 0, sigma = 0;
+					lyambda = (double)(deltaYt / deltaY);
+					sigma = (double)(deltaXt / deltaY);
+					double l = lyambda, s = sigma;
+					while (Point1.y != Point2.y)
+					{
+						if (error < 0) error += 2 * deltaX;
+						else error += 2 * deltaX - 2 * deltaY, Point1.x += signX;
+						if (errort < 0) errort += 2 * deltaXt;
+						else errort += 2 * deltaXt - 2 * deltaYt, Point1.xt += signXt * s, s += sigma;
+						Point1.y += signY;
+						Point1.yt += signYt * l, l += lyambda;
+						int r = (int)(diffuse.get(Point1.xt, Point1.yt).r);
+						int g = (int)(diffuse.get(Point1.xt, Point1.yt).g);
+						int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
+						int a = (int)(diffuse.get(Point1.xt, Point1.yt).a);
+						image.set(Point1.x, Point1.y, TGAColor(r, g, b, a));
+					}
+				}
+
+				if (deltaX > deltaY && deltaXt <= deltaYt)
+				{
+					int error = 2 * deltaY - deltaX;
+					int errort = 2 * deltaXt - deltaYt;
+					double lyambda = 0, sigma = 0;
+					lyambda = (double)(deltaYt / deltaX);
+					sigma = (double)(deltaXt / deltaX);
+					double l = lyambda, s = sigma;
+					while (Point1.x != Point2.x)
+					{
+						if (error < 0) error += 2 * deltaY;
+						else error += 2 * deltaY - 2 * deltaX, Point1.y += signY;
+						if (errort < 0) errort += 2 * deltaXt;
+						else errort += 2 * deltaXt - 2 * deltaYt, Point1.xt += signXt * s, s += sigma;
+						Point1.x += signX;
+						Point1.yt += signYt * l, l += lyambda;
+						int r = (int)(diffuse.get(Point1.xt, Point1.yt).r);
+						int g = (int)(diffuse.get(Point1.xt, Point1.yt).g);
+						int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
+						int a = (int)(diffuse.get(Point1.xt, Point1.yt).a);
+						image.set(Point1.x, Point1.y, TGAColor(r, g, b, a));
+					}
+				}
+
+				if (deltaX <= deltaY && deltaY != 0 && deltaXt > deltaYt)
+				{
+					int error = 2 * deltaX - deltaY;
+					int errort = 2 * deltaYt - deltaXt;
+					double lyambda = 0, sigma = 0;
+					lyambda = (double)(deltaYt / deltaY);
+					sigma = (double)(deltaXt / deltaY);
+					double l = lyambda, s = sigma;
+					while (Point1.y != Point2.y)
+					{
+						if (error < 0) error += 2 * deltaX;
+						else error += 2 * deltaX - 2 * deltaY, Point1.x += signX;
+						if (errort < 0) errort += 2 * deltaYt;
+						else errort += 2 * deltaYt - 2 * deltaXt, Point1.yt += signYt * l, l += lyambda;
+						Point1.y += signY;
+						Point1.xt += signXt * s, s += sigma;
+						int r = (int)(diffuse.get(Point1.xt, Point1.yt).r);
+						int g = (int)(diffuse.get(Point1.xt, Point1.yt).g);
+						int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
+						int a = (int)(diffuse.get(Point1.xt, Point1.yt).a);
+						image.set(Point1.x, Point1.y, TGAColor(r, g, b, a));
+					}
+				}
+			}//if (!fulllist.empty())
+		}//while (!fulllist.empty())*/
+		
+		 //cout << "wait: " << i << "/" << l << endl;
+	}//for (int i = 0; i < l; i++)
+
+
+
+	image.flip_vertically();
+	image.write_tga_file("output.tga");
+
+	system("pause");
+	return 0;
+}
