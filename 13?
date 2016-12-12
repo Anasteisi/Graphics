@@ -43,7 +43,7 @@ const TGAColor red = TGAColor(255, 0, 0, 255);
 
 int main()
 {
-	TGAImage image(3000, 3000, TGAImage::RGB);
+	TGAImage image(9000, 9000, TGAImage::RGB);
 	ifstream in;
 
 	char str[255];
@@ -153,9 +153,9 @@ int main()
 	{
 		int p1 = arrf[i][0].f1 - 1, p2 = arrf[i][1].f1 - 1, p3 = arrf[i][2].f1 - 1;
 		int pt1 = arrf[i][0].f2 - 1, pt2 = arrf[i][1].f2 - 1, pt3 = arrf[i][2].f2 - 1;
-		int xA = 1500 + round(1500 * arrv[p1].x), yA = 1500 + round(1500 * arrv[p1].y);
-		int xB = 1500 + round(1500 * arrv[p2].x), yB = 1500 + round(1500 * arrv[p2].y);
-		int xC = 1500 + round(1500 * arrv[p3].x), yC = 1500 + round(1500 * arrv[p3].y);
+		int xA = 4500 + round(4500 * arrv[p1].x), yA = 4500 + round(4500 * arrv[p1].y);
+		int xB = 4500 + round(4500 * arrv[p2].x), yB = 4500 + round(4500 * arrv[p2].y);
+		int xC = 4500 + round(4500 * arrv[p3].x), yC = 4500 + round(4500 * arrv[p3].y);
 		int xtA = round(1024 * arrvt[pt1].x), ytA = round(1024 * arrvt[pt1].y);
 		int xtB = round(1024 * arrvt[pt2].x), ytB = round(1024 * arrvt[pt2].y);
 		int xtC = round(1024 * arrvt[pt3].x), ytC = round(1024 * arrvt[pt3].y);
@@ -198,14 +198,19 @@ int main()
 			lyambda = (double)(deltaYt / deltaX);
 			sigma = (double)(deltaXt / deltaX);
 			double l = lyambda, s = sigma;
+			int tmpRt1x1 = Rt1.x1, tmpRt1y1 = Rt1.y1;
 			while (R1.x1 != R1.x2)
 			{
-				if (error < 0) error += 2 * deltaY;
-				else error += 2 * deltaY - 2 * deltaX, R1.y1 += signY;
-				if (errort < 0) errort += 2 * deltaYt;
-				else errort += 2 * deltaYt - 2 * deltaXt, Rt1.y1 += signYt * l, l += lyambda;
+				if (error < 0) 
+					error += 2 * deltaY;
+				else 
+					error += 2 * deltaY - 2 * deltaX, R1.y1 += signY;
+				if (errort < 0) 
+					errort += 2 * deltaYt;
+				else 
+					errort += 2 * deltaYt - 2 * deltaXt, Rt1.y1 = tmpRt1y1 + signYt * (round)(l), l += lyambda;
 				R1.x1 += signX;
-				Rt1.x1 += signXt * s, s += sigma;
+				Rt1.x1 = tmpRt1x1 + signXt * (round)(s), s += sigma;
 				Z.x = R1.x1, Z.y = R1.y1, Z.xt = Rt1.x1, Z.yt = Rt1.y1;
 				list1.push_back(Z);
 			}
@@ -219,14 +224,19 @@ int main()
 			lyambda = (double)(deltaYt / deltaY);
 			sigma = (double)(deltaXt / deltaY);
 			double l = lyambda, s = sigma;
+			int tmpRt1x1 = Rt1.x1, tmpRt1y1 = Rt1.y1;
 			while (R1.y1 != R1.y2)
 			{
-				if (error < 0) error += 2 * deltaX;
-				else error += 2 * deltaX - 2 * deltaY, R1.x1 += signX;
-				if (errort < 0) errort += 2 * deltaXt;
-				else errort += 2 * deltaXt - 2 * deltaYt, Rt1.x1 += signXt * s, s += sigma;
+				if (error < 0) 
+					error += 2 * deltaX;
+				else 
+					error += 2 * deltaX - 2 * deltaY, R1.x1 += signX;
+				if (errort < 0) 
+					errort += 2 * deltaXt;
+				else 
+					errort += 2 * deltaXt - 2 * deltaYt, Rt1.x1 = tmpRt1x1 + signXt * (round)(s), s += sigma;
 				R1.y1 += signY;
-				Rt1.y1 += signYt * l, l += lyambda;
+				Rt1.y1 = tmpRt1y1 + signYt * (round)(l), l += lyambda;
 				Z.x = R1.x1, Z.y = R1.y1, Z.xt = Rt1.x1, Z.yt = Rt1.y1;
 				list1.push_back(Z);
 			}
@@ -240,14 +250,19 @@ int main()
 			lyambda = (double)(deltaYt / deltaX);
 			sigma = (double)(deltaXt / deltaX);
 			double l = lyambda, s = sigma;
+			int tmpRt1x1 = Rt1.x1, tmpRt1y1 = Rt1.y1;
 			while (R1.x1 != R1.x2)
 			{
-				if (error < 0) error += 2 * deltaY;
-				else error += 2 * deltaY - 2 * deltaX, R1.y1 += signY;
-				if (errort < 0) errort += 2 * deltaXt;
-				else errort += 2 * deltaXt - 2 * deltaYt, Rt1.x1 += signXt * s, s += sigma;
+				if (error < 0) 
+					error += 2 * deltaY;
+				else 
+					error += 2 * deltaY - 2 * deltaX, R1.y1 += signY;
+				if (errort < 0) 
+					errort += 2 * deltaXt;
+				else
+					errort += 2 * deltaXt - 2 * deltaYt, Rt1.x1 = tmpRt1x1 + signXt * (round)(s), s += sigma;
 				R1.x1 += signX;
-				Rt1.y1 += signYt * l, l += lyambda;
+				Rt1.y1 = tmpRt1y1 + signYt * (round)(l), l += lyambda;
 				Z.x = R1.x1, Z.y = R1.y1, Z.xt = Rt1.x1, Z.yt = Rt1.y1;
 				list1.push_back(Z);
 			}
@@ -261,14 +276,19 @@ int main()
 			lyambda = (double)(deltaYt / deltaY);
 			sigma = (double)(deltaXt / deltaY);
 			double l = lyambda, s = sigma;
+			int tmpRt1x1 = Rt1.x1, tmpRt1y1 = Rt1.y1;
 			while (R1.y1 != R1.y2)
 			{
-				if (error < 0) error += 2 * deltaX;
-				else error += 2 * deltaX - 2 * deltaY, R1.x1 += signX;
-				if (errort < 0) errort += 2 * deltaYt;
-				else errort += 2 * deltaYt - 2 * deltaXt, Rt1.y1 += signYt * l, l += lyambda;
+				if (error < 0) 
+					error += 2 * deltaX;
+				else 
+					error += 2 * deltaX - 2 * deltaY, R1.x1 += signX;
+				if (errort < 0) 
+					errort += 2 * deltaYt;
+				else 
+					errort += 2 * deltaYt - 2 * deltaXt, Rt1.y1 = tmpRt1y1 + signYt * (round)(l), l += lyambda;
 				R1.y1 += signY;
-				Rt1.x1 += signXt * s, s += sigma;
+				Rt1.x1 = tmpRt1x1 + signXt * (round)(s), s += sigma;
 				Z.x = R1.x1, Z.y = R1.y1, Z.xt = Rt1.x1, Z.yt = Rt1.y1;
 				list1.push_back(Z);
 			}
@@ -299,14 +319,19 @@ int main()
 			lyambda = (double)(deltaYt / deltaX);
 			sigma = (double)(deltaXt / deltaX);
 			double l = lyambda, s = sigma;
+			int tmpRt2x1 = Rt2.x1, tmpRt2y1 = Rt2.y1;
 			while (R2.x1 != R2.x2)
 			{
-				if (error < 0) error += 2 * deltaY;
-				else error += 2 * deltaY - 2 * deltaX, R2.y1 += signY;
-				if (errort < 0) errort += 2 * deltaYt;
-				else errort += 2 * deltaYt - 2 * deltaXt, Rt2.y1 += signYt * l, l += lyambda;
+				if (error < 0) 
+					error += 2 * deltaY;
+				else 
+					error += 2 * deltaY - 2 * deltaX, R2.y1 += signY;
+				if (errort < 0) 
+					errort += 2 * deltaYt;
+				else 
+					errort += 2 * deltaYt - 2 * deltaXt, Rt2.y1 = tmpRt2y1 + signYt * (round)(l), l += lyambda;
 				R2.x1 += signX;
-				Rt2.x1 += signXt * s, s += sigma;
+				Rt2.x1 = tmpRt2x1 + signXt * (round)(s), s += sigma;
 				Z.x = R2.x1, Z.y = R2.y1, Z.xt = Rt2.x1, Z.yt = Rt2.y1;
 				list2.push_back(Z);
 			}
@@ -320,14 +345,19 @@ int main()
 			lyambda = (double)(deltaYt / deltaY);
 			sigma = (double)(deltaXt / deltaY);
 			double l = lyambda, s = sigma;
+			int tmpRt2x1 = Rt2.x1, tmpRt2y1 = Rt2.y1;
 			while (R2.y1 != R2.y2)
 			{
-				if (error < 0) error += 2 * deltaX;
-				else error += 2 * deltaX - 2 * deltaY, R2.x1 += signX;
-				if (errort < 0) errort += 2 * deltaXt;
-				else errort += 2 * deltaXt - 2 * deltaYt, Rt2.x1 += signXt * s, s += sigma;
+				if (error < 0) 
+					error += 2 * deltaX;
+				else 
+					error += 2 * deltaX - 2 * deltaY, R2.x1 += signX;
+				if (errort < 0) 
+					errort += 2 * deltaXt;
+				else 
+					errort += 2 * deltaXt - 2 * deltaYt, Rt2.x1 = tmpRt2x1 + signXt * (round)(s), s += sigma;
 				R2.y1 += signY;
-				Rt2.y1 += signYt * l, l += lyambda;
+				Rt2.y1 = tmpRt2y1 + signYt * (round)(l), l += lyambda;
 				Z.x = R2.x1, Z.y = R2.y1, Z.xt = Rt2.x1, Z.yt = Rt2.y1;
 				list2.push_back(Z);
 			}
@@ -341,14 +371,19 @@ int main()
 			lyambda = (double)(deltaYt / deltaX);
 			sigma = (double)(deltaXt / deltaX);
 			double l = lyambda, s = sigma;
+			int tmpRt2x1 = Rt2.x1, tmpRt2y1 = Rt2.y1;
 			while (R2.x1 != R2.x2)
 			{
-				if (error < 0) error += 2 * deltaY;
-				else error += 2 * deltaY - 2 * deltaX, R2.y1 += signY;
-				if (errort < 0) errort += 2 * deltaXt;
-				else errort += 2 * deltaXt - 2 * deltaYt, Rt2.x1 += signXt * s, s += sigma;
+				if (error < 0) 
+					error += 2 * deltaY;
+				else 
+					error += 2 * deltaY - 2 * deltaX, R2.y1 += signY;
+				if (errort < 0) 
+					errort += 2 * deltaXt;
+				else 
+					errort += 2 * deltaXt - 2 * deltaYt, Rt2.x1 = tmpRt2x1 + signXt * (round)(s), s += sigma;
 				R2.x1 += signX;
-				Rt2.y1 += signYt * l, l += lyambda;
+				Rt2.y1 = tmpRt2y1 + signYt * (round)(l), l += lyambda;
 				Z.x = R2.x1, Z.y = R2.y1, Z.xt = Rt2.x1, Z.yt = Rt2.y1;
 				list2.push_back(Z);
 			}
@@ -362,14 +397,19 @@ int main()
 			lyambda = (double)(deltaYt / deltaY);
 			sigma = (double)(deltaXt / deltaY);
 			double l = lyambda, s = sigma;
+			int tmpRt2x1 = Rt2.x1, tmpRt2y1 = Rt2.y1;
 			while (R2.y1 != R2.y2)
 			{
-				if (error < 0) error += 2 * deltaX;
-				else error += 2 * deltaX - 2 * deltaY, R2.x1 += signX;
-				if (errort < 0) errort += 2 * deltaYt;
-				else errort += 2 * deltaYt - 2 * deltaXt, Rt2.y1 += signYt * l, l += lyambda;
+				if (error < 0) 
+					error += 2 * deltaX;
+				else 
+					error += 2 * deltaX - 2 * deltaY, R2.x1 += signX;
+				if (errort < 0) 
+					errort += 2 * deltaYt;
+				else 
+					errort += 2 * deltaYt - 2 * deltaXt, Rt2.y1 = tmpRt2y1 + signYt * (round)(l), l += lyambda;
 				R2.y1 += signY;
-				Rt2.x1 += signXt * s, s += sigma;
+				Rt2.x1 = tmpRt2x1 + signXt * (round)(s), s += sigma;
 				Z.x = R2.x1, Z.y = R2.y1, Z.xt = Rt2.x1, Z.yt = Rt2.y1;
 				list2.push_back(Z);
 			}
@@ -400,14 +440,19 @@ int main()
 			lyambda = (double)(deltaYt / deltaX);
 			sigma = (double)(deltaXt / deltaX);
 			double l = lyambda, s = sigma;
+			int tmpRt3x1 = Rt3.x1, tmpRt3y1 = Rt3.y1;
 			while (R3.x1 != R3.x2)
 			{
-				if (error < 0) error += 2 * deltaY;
-				else error += 2 * deltaY - 2 * deltaX, R3.y1 += signY;
-				if (errort < 0) errort += 2 * deltaYt;
-				else errort += 2 * deltaYt - 2 * deltaXt, Rt3.y1 += signYt * l, l += lyambda;
+				if (error < 0) 
+					error += 2 * deltaY;
+				else 
+					error += 2 * deltaY - 2 * deltaX, R3.y1 += signY;
+				if (errort < 0)
+					errort += 2 * deltaYt;
+				else 
+					errort += 2 * deltaYt - 2 * deltaXt, Rt3.y1 = tmpRt3y1 + signYt * (round)(l), l += lyambda;
 				R3.x1 += signX;
-				Rt3.x1 += signXt * s, s += sigma;
+				Rt3.x1 = tmpRt3x1 + signXt * (round)(s), s += sigma;
 				Z.x = R3.x1, Z.y = R3.y1, Z.xt = Rt3.x1, Z.yt = Rt3.y1;
 				list3.push_back(Z);
 			}
@@ -421,14 +466,19 @@ int main()
 			lyambda = (double)(deltaYt / deltaY);
 			sigma = (double)(deltaXt / deltaY);
 			double l = lyambda, s = sigma;
+			int tmpRt3x1 = Rt3.x1, tmpRt3y1 = Rt3.y1;
 			while (R3.y1 != R3.y2)
 			{
-				if (error < 0) error += 2 * deltaX;
-				else error += 2 * deltaX - 2 * deltaY, R3.x1 += signX;
-				if (errort < 0) errort += 2 * deltaXt;
-				else errort += 2 * deltaXt - 2 * deltaYt, Rt3.x1 += signXt * s, s += sigma;
+				if (error < 0) 
+					error += 2 * deltaX;
+				else 
+					error += 2 * deltaX - 2 * deltaY, R3.x1 += signX;
+				if (errort < 0) 
+					errort += 2 * deltaXt;
+				else 
+					errort += 2 * deltaXt - 2 * deltaYt, Rt3.x1 = tmpRt3x1 + signXt * (round)(s), s += sigma;
 				R3.y1 += signY;
-				Rt3.y1 += signYt * l, l += lyambda;
+				Rt3.y1 = tmpRt3y1 + signYt * (round)(l), l += lyambda;
 				Z.x = R3.x1, Z.y = R3.y1, Z.xt = Rt3.x1, Z.yt = Rt3.y1;
 				list3.push_back(Z);
 			}
@@ -442,14 +492,19 @@ int main()
 			lyambda = (double)(deltaYt / deltaX);
 			sigma = (double)(deltaXt / deltaX);
 			double l = lyambda, s = sigma;
+			int tmpRt3x1 = Rt3.x1, tmpRt3y1 = Rt3.y1;
 			while (R3.x1 != R3.x2)
 			{
-				if (error < 0) error += 2 * deltaY;
-				else error += 2 * deltaY - 2 * deltaX, R3.y1 += signY;
-				if (errort < 0) errort += 2 * deltaXt;
-				else errort += 2 * deltaXt - 2 * deltaYt, Rt3.x1 += signXt * s, s += sigma;
+				if (error < 0) 
+					error += 2 * deltaY;
+				else 
+					error += 2 * deltaY - 2 * deltaX, R3.y1 += signY;
+				if (errort < 0) 
+					errort += 2 * deltaXt;
+				else 
+					errort += 2 * deltaXt - 2 * deltaYt, Rt3.x1 = tmpRt3x1 + signXt * (round)(s), s += sigma;
 				R3.x1 += signX;
-				Rt3.y1 += signYt * l, l += lyambda;
+				Rt3.y1 = tmpRt3y1 + signYt * (round)(l), l += lyambda;
 				Z.x = R3.x1, Z.y = R3.y1, Z.xt = Rt3.x1, Z.yt = Rt3.y1;
 				list3.push_back(Z);
 			}
@@ -463,14 +518,19 @@ int main()
 			lyambda = (double)(deltaYt / deltaY);
 			sigma = (double)(deltaXt / deltaY);
 			double l = lyambda, s = sigma;
+			int tmpRt3x1 = Rt3.x1, tmpRt3y1 = Rt3.y1;
 			while (R3.y1 != R3.y2)
 			{
-				if (error < 0) error += 2 * deltaX;
-				else error += 2 * deltaX - 2 * deltaY, R3.x1 += signX;
-				if (errort < 0) errort += 2 * deltaYt;
-				else errort += 2 * deltaYt - 2 * deltaXt, Rt3.y1 += signYt * l, l += lyambda;
+				if (error < 0) 
+					error += 2 * deltaX;
+				else 
+					error += 2 * deltaX - 2 * deltaY, R3.x1 += signX;
+				if (errort < 0) 
+					errort += 2 * deltaYt;
+				else 
+					errort += 2 * deltaYt - 2 * deltaXt, Rt3.y1 = tmpRt3y1 + signYt * (round)(l), l += lyambda;
 				R3.y1 += signY;
-				Rt3.x1 += signXt * s, s += sigma;
+				Rt3.x1 = tmpRt3x1 + signXt * (round)(s), s += sigma;
 				Z.x = R3.x1, Z.y = R3.y1, Z.xt = Rt3.x1, Z.yt = Rt3.y1;
 				list3.push_back(Z);
 			}
@@ -500,7 +560,12 @@ int main()
 			int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
 			int a = (int)(diffuse.get(Point1.xt, Point1.yt).a);
 			image.set(Point1.x, Point1.y, TGAColor(r, g, b, a));
-		}*/
+			if (r == 0 && g == 0 && b == 0 && a == 0)
+			{
+				cout << Point1.x << " " << Point1.y << " " << Point1.xt << " " << Point1.yt << endl;
+				cout << r << " " << g << " " << b << " " << a << endl;
+			}
+		}//*/
 
 		SootvNT Point1, Point2;
 		while (!fulllist.empty())
@@ -533,7 +598,6 @@ int main()
 					int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
 					int a = (int)(diffuse.get(Point1.xt, Point1.yt).a);
 					image.set(Point1.x, Point1.y, TGAColor(r, g, b, a));
-					continue;
 				}
 
 				if (deltaX > deltaY && deltaXt > deltaYt)
@@ -544,14 +608,19 @@ int main()
 					lyambda = (double)(deltaYt / deltaX);
 					sigma = (double)(deltaXt / deltaX);
 					double l = lyambda, s = sigma;
+					int tmpxt = Point1.xt, tmpyt = Point1.yt;
 					while (Point1.x != Point2.x)
 					{
-						if (error < 0) error += 2 * deltaY;
-						else error += 2 * deltaY - 2 * deltaX, Point1.y += signY;
-						if (errort < 0) errort += 2 * deltaYt;
-						else errort += 2 * deltaYt - 2 * deltaXt, Point1.yt += signYt * l, l += lyambda;
+						if (error < 0) 
+							error += 2 * deltaY;
+						else 
+							error += 2 * deltaY - 2 * deltaX, Point1.y += signY;
+						if 
+							(errort < 0) errort += 2 * deltaYt;
+						else 
+							errort += 2 * deltaYt - 2 * deltaXt, Point1.yt = tmpyt + signYt * (round)(l), l += lyambda;
 						Point1.x += signX;
-						Point1.xt += signXt * s, s += sigma;
+						Point1.xt = tmpxt + signXt * (round)(s), s += sigma;
 						int r = (int)(diffuse.get(Point1.xt, Point1.yt).r);
 						int g = (int)(diffuse.get(Point1.xt, Point1.yt).g);
 						int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
@@ -568,14 +637,15 @@ int main()
 					lyambda = (double)(deltaYt / deltaY);
 					sigma = (double)(deltaXt / deltaY);
 					double l = lyambda, s = sigma;
+					int tmpxt = Point1.xt, tmpyt = Point1.yt;
 					while (Point1.y != Point2.y)
 					{
 						if (error < 0) error += 2 * deltaX;
 						else error += 2 * deltaX - 2 * deltaY, Point1.x += signX;
 						if (errort < 0) errort += 2 * deltaXt;
-						else errort += 2 * deltaXt - 2 * deltaYt, Point1.xt += signXt * s, s += sigma;
+						else errort += 2 * deltaXt - 2 * deltaYt, Point1.xt = tmpxt + signXt * (round)(s), s += sigma;
 						Point1.y += signY;
-						Point1.yt += signYt * l, l += lyambda;
+						Point1.yt = tmpyt + signYt * (round)(l), l += lyambda;
 						int r = (int)(diffuse.get(Point1.xt, Point1.yt).r);
 						int g = (int)(diffuse.get(Point1.xt, Point1.yt).g);
 						int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
@@ -592,14 +662,15 @@ int main()
 					lyambda = (double)(deltaYt / deltaX);
 					sigma = (double)(deltaXt / deltaX);
 					double l = lyambda, s = sigma;
+					int tmpxt = Point1.xt, tmpyt = Point1.yt;
 					while (Point1.x != Point2.x)
 					{
 						if (error < 0) error += 2 * deltaY;
 						else error += 2 * deltaY - 2 * deltaX, Point1.y += signY;
 						if (errort < 0) errort += 2 * deltaXt;
-						else errort += 2 * deltaXt - 2 * deltaYt, Point1.xt += signXt * s, s += sigma;
+						else errort += 2 * deltaXt - 2 * deltaYt, Point1.xt = tmpxt + signXt * (round)(s), s += sigma;
 						Point1.x += signX;
-						Point1.yt += signYt * l, l += lyambda;
+						Point1.yt = tmpyt + signYt * (round)(l), l += lyambda;
 						int r = (int)(diffuse.get(Point1.xt, Point1.yt).r);
 						int g = (int)(diffuse.get(Point1.xt, Point1.yt).g);
 						int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
@@ -616,14 +687,15 @@ int main()
 					lyambda = (double)(deltaYt / deltaY);
 					sigma = (double)(deltaXt / deltaY);
 					double l = lyambda, s = sigma;
+					int tmpxt = Point1.xt, tmpyt = Point1.yt;
 					while (Point1.y != Point2.y)
 					{
 						if (error < 0) error += 2 * deltaX;
 						else error += 2 * deltaX - 2 * deltaY, Point1.x += signX;
 						if (errort < 0) errort += 2 * deltaYt;
-						else errort += 2 * deltaYt - 2 * deltaXt, Point1.yt += signYt * l, l += lyambda;
+						else errort += 2 * deltaYt - 2 * deltaXt, Point1.yt = tmpyt + signYt * (round)(l), l += lyambda;
 						Point1.y += signY;
-						Point1.xt += signXt * s, s += sigma;
+						Point1.xt = tmpxt + signXt * (round)(s), s += sigma;
 						int r = (int)(diffuse.get(Point1.xt, Point1.yt).r);
 						int g = (int)(diffuse.get(Point1.xt, Point1.yt).g);
 						int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
@@ -632,12 +704,18 @@ int main()
 					}
 				}
 			}//if (!fulllist.empty())
+			else
+			{
+				int r = (int)(diffuse.get(Point1.xt, Point1.yt).r);
+				int g = (int)(diffuse.get(Point1.xt, Point1.yt).g);
+				int b = (int)(diffuse.get(Point1.xt, Point1.yt).b);
+				int a = (int)(diffuse.get(Point1.xt, Point1.yt).a);
+				image.set(Point1.x, Point1.y, TGAColor(r, g, b, a));
+			}
 		}//while (!fulllist.empty())*/
 		
 		 //cout << "wait: " << i << "/" << l << endl;
 	}//for (int i = 0; i < l; i++)
-
-
 
 	image.flip_vertically();
 	image.write_tga_file("output.tga");
