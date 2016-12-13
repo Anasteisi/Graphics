@@ -140,10 +140,10 @@ int main()
 
 	double ppx = 1500, ppy = 1500, ppz = 0;//perenos
 	double mashx = 1500, mashy = 1500, mashz = 1500;//mashtab
-	double alphaX = 0 * 3.14159265358979323846264 / 180;//povorotX
-	double alphaY = 30 * 3.14159265358979323846264 / 180;
-	double alphaZ = 0 * 3.14159265358979323846264 / 180;
-	double r = 250000000000000;
+	double alphaX = 10 * 3.14159265358979323846264 / 180;//povorotX
+	double alphaY = 20 * 3.14159265358979323846264 / 180;
+	double alphaZ = 30 * 3.14159265358979323846264 / 180;
+	double r = 2000000000;
 
 	double **matrParPeren = new double *[4];
 	for (int i = 0; i < 4; ++i)
@@ -156,7 +156,7 @@ int main()
 				matrParPeren[i][j] = 0;//zapolnenie massiva
 	}
 	matrParPeren[3][0] = ppx, matrParPeren[3][1] = ppy, matrParPeren[3][2] = ppz;
-	printm(matrParPeren, 4, 4);
+	//printm(matrParPeren, 4, 4);
 
 	double **matrMasht = new double *[4];
 	for (int i = 0; i < 4; ++i)
@@ -169,7 +169,7 @@ int main()
 				matrMasht[i][j] = 0;//zapolnenie massiva
 	}
 	matrMasht[0][0] = mashx, matrMasht[1][1] = mashy, matrMasht[2][2] = mashz;
-	printm(matrMasht, 4, 4);
+	//printm(matrMasht, 4, 4);
 
 	double **matrPovPoX = new double *[4];
 	for (int i = 0; i < 4; ++i)
@@ -183,7 +183,7 @@ int main()
 	}
 	double sinalphaX = sin(alphaX), cosalphaX = cos(alphaX);
 	matrPovPoX[1][1] = cosalphaX, matrPovPoX[2][2] = cosalphaX, matrPovPoX[2][1] = sinalphaX, matrPovPoX[1][2] = -sinalphaX;
-	printm(matrPovPoX, 4, 4);
+	//printm(matrPovPoX, 4, 4);
 
 	double **matrPovPoY = new double *[4];
 	for (int i = 0; i < 4; ++i)
@@ -197,7 +197,7 @@ int main()
 	}
 	double sinalphaY = sin(alphaY), cosalphaY = cos(alphaY);
 	matrPovPoY[0][0] = cosalphaY, matrPovPoY[2][2] = cosalphaY, matrPovPoY[0][2] = sinalphaY, matrPovPoY[2][0] = -sinalphaY;
-	printm(matrPovPoY, 4, 4);
+	//printm(matrPovPoY, 4, 4);
 
 	double **matrPovPoZ = new double *[4];
 	for (int i = 0; i < 4; ++i)
@@ -211,7 +211,7 @@ int main()
 	}
 	double sinalphaZ = sin(alphaZ), cosalphaZ = cos(alphaZ);
 	matrPovPoZ[0][0] = cosalphaZ, matrPovPoZ[1][1] = cosalphaZ, matrPovPoZ[1][0] = sinalphaZ, matrPovPoZ[0][1] = -sinalphaZ;
-	printm(matrPovPoZ, 4, 4);
+	//printm(matrPovPoZ, 4, 4);
 
 	double **matrPerPreobr = new double *[4];
 	for (int i = 0; i < 4; ++i)
@@ -224,10 +224,10 @@ int main()
 				matrPerPreobr[i][j] = 0;//zapolnenie massiva
 	}
 	matrPerPreobr[2][3] = -1/r;
-	printm(matrPerPreobr, 4, 4);
+	//printm(matrPerPreobr, 4, 4);
 
 	double** matrKoord = proizvmatrs(proizvmatrs(proizvmatrs(proizvmatrs(proizvmatrs(matrPovPoX, matrPovPoY, 4, 4, 4), matrPovPoZ, 4, 4, 4), matrMasht, 4, 4, 4), matrPerPreobr, 4, 4, 4), matrParPeren, 4, 4, 4);
-	printm(matrKoord, 4, 4);
+	//printm(matrKoord, 4, 4);
 
 	for (int i = 0; i < l; i++)
 	{
@@ -247,7 +247,7 @@ int main()
 		double** matrItogA = proizvmatrs(matrKoordA, matrKoord, 1, 4, 4);
 		for (int i = 0; i < 4; i++)
 			matrItogA[0][i] /= matrItogA[0][3];
-		printm(matrItogA, 1, 4);
+		//printm(matrItogA, 1, 4);
 
 		double **matrKoordB = new double *[1];//vector coordinat A
 		for (int i = 0; i < 1; ++i)
@@ -260,7 +260,7 @@ int main()
 		double** matrItogB = proizvmatrs(matrKoordB, matrKoord, 1, 4, 4);
 		for (int i = 0; i < 4; i++)
 			matrItogB[0][i] /= matrItogB[0][3];
-		printm(matrItogB, 1, 4);
+		//printm(matrItogB, 1, 4);
 
 		double **matrKoordC = new double *[1];//vector coordinat A
 		for (int i = 0; i < 1; ++i)
@@ -273,7 +273,7 @@ int main()
 		double** matrItogC = proizvmatrs(matrKoordC, matrKoord, 1, 4, 4);
 		for (int i = 0; i < 4; i++)
 			matrItogC[0][i] /= matrItogC[0][3];
-		printm(matrItogC, 1, 4);
+		//printm(matrItogC, 1, 4);
 
 		line(matrItogA[0][0], matrItogA[0][1], matrItogB[0][0], matrItogB[0][1], image, white);
 		line(matrItogA[0][0], matrItogA[0][1], matrItogC[0][0], matrItogC[0][1], image, white);
