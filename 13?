@@ -57,7 +57,7 @@ const TGAColor red = TGAColor(255, 0, 0, 255);
 
 int main()
 {
-	TGAImage image(9000, 9000, TGAImage::RGB);
+	TGAImage image(3000, 3000, TGAImage::RGB);
 	ifstream in;
 
 	char str[255];
@@ -167,9 +167,9 @@ int main()
 	{
 		int p1 = arrf[i][0].f1 - 1, p2 = arrf[i][1].f1 - 1, p3 = arrf[i][2].f1 - 1;
 		int pt1 = arrf[i][0].f2 - 1, pt2 = arrf[i][1].f2 - 1, pt3 = arrf[i][2].f2 - 1;
-		int xA = 4500 + round(4500 * arrv[p1].x), yA = 4500 + round(4500 * arrv[p1].y);
-		int xB = 4500 + round(4500 * arrv[p2].x), yB = 4500 + round(4500 * arrv[p2].y);
-		int xC = 4500 + round(4500 * arrv[p3].x), yC = 4500 + round(4500 * arrv[p3].y);
+		int xA = 1500 + round(1500 * arrv[p1].x), yA = 1500 + round(1500 * arrv[p1].y);
+		int xB = 1500 + round(1500 * arrv[p2].x), yB = 1500 + round(1500 * arrv[p2].y);
+		int xC = 1500 + round(1500 * arrv[p3].x), yC = 1500 + round(1500 * arrv[p3].y);
 		int xtA = round(1024 * arrvt[pt1].x), ytA = round(1024 * arrvt[pt1].y);
 		int xtB = round(1024 * arrvt[pt2].x), ytB = round(1024 * arrvt[pt2].y);
 		int xtC = round(1024 * arrvt[pt3].x), ytC = round(1024 * arrvt[pt3].y);
